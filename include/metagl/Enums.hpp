@@ -31,6 +31,22 @@
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF
 #endif
 
+// GL_EXT_texture_compression_s3tc is likewise not core GLES/GL. The same four values are also
+// reached through WEBGL_compressed_texture_s3tc and the ANGLE dxt3/dxt5 extensions, so a context
+// may advertise any of those spellings and mean these formats.
+#ifndef GL_COMPRESSED_RGB_S3TC_DXT1_EXT
+#define GL_COMPRESSED_RGB_S3TC_DXT1_EXT 0x83F0
+#endif
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+#define GL_COMPRESSED_RGBA_S3TC_DXT1_EXT 0x83F1
+#endif
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
+#endif
+#ifndef GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
+#endif
+
 namespace metagl
 {
     template<GlBitfield T>
@@ -550,7 +566,16 @@ namespace metagl
         Srgb8Alpha8Astc10x8             = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8,
         Srgb8Alpha8Astc10x10            = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10,
         Srgb8Alpha8Astc12x10            = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10,
-        Srgb8Alpha8Astc12x12            = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12
+        Srgb8Alpha8Astc12x12            = GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12,
+
+        // S3TC / DXT (GL_EXT_texture_compression_s3tc) -- an extension rather than an ES-core set,
+        // so a context must be asked for it before these are used. DXT1 has two entries because the
+        // same 8-byte block is read as opaque RGB or as RGB with one bit of alpha depending on
+        // which internal format it is given.
+        RgbS3tcDxt1                     = GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+        RgbaS3tcDxt1                    = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
+        RgbaS3tcDxt3                    = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
+        RgbaS3tcDxt5                    = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
     };
 
     /**

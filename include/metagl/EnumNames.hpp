@@ -427,6 +427,10 @@ namespace metagl
         else if (v == CompressedInternalFormat::Srgb8Alpha8Astc10x10) return "Srgb8Alpha8Astc10x10";
         else if (v == CompressedInternalFormat::Srgb8Alpha8Astc12x10) return "Srgb8Alpha8Astc12x10";
         else if (v == CompressedInternalFormat::Srgb8Alpha8Astc12x12) return "Srgb8Alpha8Astc12x12";
+        else if (v == CompressedInternalFormat::RgbS3tcDxt1) return "RgbS3tcDxt1";
+        else if (v == CompressedInternalFormat::RgbaS3tcDxt1) return "RgbaS3tcDxt1";
+        else if (v == CompressedInternalFormat::RgbaS3tcDxt3) return "RgbaS3tcDxt3";
+        else if (v == CompressedInternalFormat::RgbaS3tcDxt5) return "RgbaS3tcDxt5";
         return "?";
     }
 
