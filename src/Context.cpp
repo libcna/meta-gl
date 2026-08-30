@@ -19,6 +19,7 @@ namespace metagl::detail
     // loader state unusable until all entry points have been loaded again.
     void InvalidateFunctionsAfterContextLoss() noexcept;
 
+#ifndef __EMSCRIPTEN__
     static bool parse_version(const char* ptr, int& major, int& minor)
     {
         if (!ptr || !*ptr) return false;
@@ -31,6 +32,7 @@ namespace metagl::detail
             minor = minor * 10 + (*ptr++ - '0');
         return major > 0 || minor > 0;
     }
+#endif
 
     // Called by Functions.cpp Initialize() after function pointers are loaded.
     // Uses the public metagl::gl* API which is valid at this point.
