@@ -449,6 +449,9 @@ namespace metagl
         Rgba32UI     = GL_RGBA32UI,
         Rgba32I      = GL_RGBA32I,
 
+        // Desktop GL normalized formats not present in the GLES headers.
+        Rgba16       = 0x805B,
+
         // Depth/stencil ES 3.0
         DepthComponent24  = GL_DEPTH_COMPONENT24,
         DepthComponent32F = GL_DEPTH_COMPONENT32F,

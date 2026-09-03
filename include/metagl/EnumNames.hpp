@@ -329,6 +329,7 @@ namespace metagl
         else if (v == InternalFormat::Luminance) return "Luminance";
         else if (v == InternalFormat::LuminanceAlpha) return "LuminanceAlpha";
         else if (v == InternalFormat::Rgba4) return "Rgba4";
+        else if (v == InternalFormat::Rgba16) return "Rgba16";
         else if (v == InternalFormat::Rgb5A1) return "Rgb5A1";
         else if (v == InternalFormat::Rgb565) return "Rgb565";
         else if (v == InternalFormat::DepthComponent16) return "DepthComponent16";

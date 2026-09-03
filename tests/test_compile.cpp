@@ -254,6 +254,7 @@ int main()
     check("PixelFormat::Rgba",                           to_string(PixelFormat::Rgba));
     check("PixelType::UnsignedByte",                     to_string(PixelType::UnsignedByte));
     check("InternalFormat::Rgba8",                       to_string(InternalFormat::Rgba8));
+    check("InternalFormat::Rgba16",                      to_string(InternalFormat::Rgba16));
     check("CompressedInternalFormat::R11Eac",            to_string(CompressedInternalFormat::R11Eac));
     check("StringName::Vendor",                          to_string(StringName::Vendor));
     check("IntegerName::MajorVersion",                   to_string(IntegerName::MajorVersion));
