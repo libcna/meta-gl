@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enum Reference — meta-gl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="getting-started.html">Getting Started</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="enums.html" class="active">Enums</a>
+    <a href="functions.html">Functions</a>
+    <a href="types.html">Types</a>
+    <a href="context.html">Context</a>
+    <a href="context-events.html">Ctx Events</a>
+    <a href="capabilities.html">Capabilities</a>
+    <a href="debug.html">Debug</a>
+    <a href="examples.html">Examples</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Rendering State</h3>
+  <ul>
+    <li><a href="#ClearBufferBit">ClearBufferBit</a></li>
+    <li><a href="#Capability">Capability</a></li>
+    <li><a href="#BlendFactor">BlendFactor</a></li>
+    <li><a href="#BlendEquation">BlendEquation</a></li>
+    <li><a href="#CompareFunc">CompareFunc</a></li>
+    <li><a href="#StencilOp">StencilOp</a></li>
+    <li><a href="#CullFace">CullFace</a></li>
+    <li><a href="#FrontFace">FrontFace</a></li>
+  </ul>
+  <h3>Primitives &amp; Data</h3>
+  <ul>
+    <li><a href="#PrimitiveType">PrimitiveType</a></li>
+    <li><a href="#DataType">DataType</a></li>
+    <li><a href="#PixelFormat">PixelFormat</a></li>
+    <li><a href="#PixelType">PixelType</a></li>
+  </ul>
+  <h3>Buffers</h3>
+  <ul>
+    <li><a href="#BufferTarget">BufferTarget</a></li>
+    <li><a href="#BufferUsage">BufferUsage</a></li>
+    <li><a href="#MapBufferAccessMask">MapBufferAccessMask</a></li>
+  </ul>
+  <h3>Textures</h3>
+  <ul>
+    <li><a href="#TextureTarget">TextureTarget</a></li>
+    <li><a href="#TextureMinFilter">TextureMinFilter</a></li>
+    <li><a href="#TextureMagFilter">TextureMagFilter</a></li>
+    <li><a href="#TextureWrapMode">TextureWrapMode</a></li>
+    <li><a href="#InternalFormat">InternalFormat</a></li>
+    <li><a href="#CompressedInternalFormat">Compressed Formats</a></li>
+  </ul>
+  <h3>Shaders &amp; Programs</h3>
+  <ul>
+    <li><a href="#ShaderType">ShaderType</a></li>
+    <li><a href="#ShaderStageMask">ShaderStageMask</a></li>
+    <li><a href="#UniformType">UniformType</a></li>
+  </ul>
+  <h3>Framebuffers</h3>
+  <ul>
+    <li><a href="#FramebufferTarget">FramebufferTarget</a></li>
+    <li><a href="#FramebufferAttachment">FramebufferAttachment</a></li>
+    <li><a href="#FramebufferStatus">FramebufferStatus</a></li>
+  </ul>
+  <h3>Debug</h3>
+  <ul>
+    <li><a href="#DebugSource">DebugSource</a></li>
+    <li><a href="#DebugType">DebugType</a></li>
+    <li><a href="#DebugSeverity">DebugSeverity</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+<h1>Enum Reference</h1>
+<p>All enums live in <code>include/metagl/Enums.hpp</code> and the <code>metagl</code> namespace.
+Every enumerator has a generated <code>metagl::to_string()</code> overload in <code>EnumNames.hpp</code>
+used by the debug logger. Tags show minimum ES version.</p>
+
+<!-- ClearBufferBit -->
+<h2 id="ClearBufferBit">ClearBufferBit <code>: GLbitfield</code></h2>
+<p>Bitmask passed to <code>glClear()</code>. Supports <code>operator|</code>.</p>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>Meaning</th></tr>
+  <tr><td class="enum-value">Color</td><td class="enum-gl">GL_COLOR_BUFFER_BIT</td><td>Clear the colour buffer</td></tr>
+  <tr><td class="enum-value">Depth</td><td class="enum-gl">GL_DEPTH_BUFFER_BIT</td><td>Clear the depth buffer</td></tr>
+  <tr><td class="enum-value">Stencil</td><td class="enum-gl">GL_STENCIL_BUFFER_BIT</td><td>Clear the stencil buffer</td></tr>
+</table>
+
+<!-- Capability -->
+<h2 id="Capability">Capability <code>: GLenum</code></h2>
+<p>Server-side capabilities toggled with <code>glEnable()</code> / <code>glDisable()</code>.</p>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>ES</th></tr>
+  <tr><td class="enum-value">Blend</td><td class="enum-gl">GL_BLEND</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">CullFace</td><td class="enum-gl">GL_CULL_FACE</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">DepthTest</td><td class="enum-gl">GL_DEPTH_TEST</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Dither</td><td class="enum-gl">GL_DITHER</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">PolygonOffsetFill</td><td class="enum-gl">GL_POLYGON_OFFSET_FILL</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">SampleAlphaToCoverage</td><td class="enum-gl">GL_SAMPLE_ALPHA_TO_COVERAGE</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">SampleCoverage</td><td class="enum-gl">GL_SAMPLE_COVERAGE</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">ScissorTest</td><td class="enum-gl">GL_SCISSOR_TEST</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">StencilTest</td><td class="enum-gl">GL_STENCIL_TEST</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">RasterizerDiscard</td><td class="enum-gl">GL_RASTERIZER_DISCARD</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">PrimitiveRestartFixedIndex</td><td class="enum-gl">GL_PRIMITIVE_RESTART_FIXED_INDEX</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">SampleMask</td><td class="enum-gl">GL_SAMPLE_MASK</td><td><span class="tag tag-es31">3.1</span></td></tr>
+  <tr><td class="enum-value">DebugOutput</td><td class="enum-gl">GL_DEBUG_OUTPUT</td><td><span class="tag tag-es32">3.2</span></td></tr>
+  <tr><td class="enum-value">DebugOutputSynchronous</td><td class="enum-gl">GL_DEBUG_OUTPUT_SYNCHRONOUS</td><td><span class="tag tag-es32">3.2</span></td></tr>
+  <tr><td class="enum-value">SampleShading</td><td class="enum-gl">GL_SAMPLE_SHADING</td><td><span class="tag tag-es32">3.2</span></td></tr>
+</table>
+
+<!-- BlendFactor -->
+<h2 id="BlendFactor">BlendFactor <code>: GLenum</code></h2>
+<p>Source and destination blend factors for <code>glBlendFunc()</code> / <code>glBlendFunci()</code>.</p>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th></tr>
+  <tr><td class="enum-value">Zero</td><td class="enum-gl">GL_ZERO</td></tr>
+  <tr><td class="enum-value">One</td><td class="enum-gl">GL_ONE</td></tr>
+  <tr><td class="enum-value">SrcColor</td><td class="enum-gl">GL_SRC_COLOR</td></tr>
+  <tr><td class="enum-value">OneMinusSrcColor</td><td class="enum-gl">GL_ONE_MINUS_SRC_COLOR</td></tr>
+  <tr><td class="enum-value">SrcAlpha</td><td class="enum-gl">GL_SRC_ALPHA</td></tr>
+  <tr><td class="enum-value">OneMinusSrcAlpha</td><td class="enum-gl">GL_ONE_MINUS_SRC_ALPHA</td></tr>
+  <tr><td class="enum-value">DstAlpha</td><td class="enum-gl">GL_DST_ALPHA</td></tr>
+  <tr><td class="enum-value">OneMinusDstAlpha</td><td class="enum-gl">GL_ONE_MINUS_DST_ALPHA</td></tr>
+  <tr><td class="enum-value">DstColor</td><td class="enum-gl">GL_DST_COLOR</td></tr>
+  <tr><td class="enum-value">OneMinusDstColor</td><td class="enum-gl">GL_ONE_MINUS_DST_COLOR</td></tr>
+  <tr><td class="enum-value">SrcAlphaSaturate</td><td class="enum-gl">GL_SRC_ALPHA_SATURATE</td></tr>
+  <tr><td class="enum-value">ConstantColor</td><td class="enum-gl">GL_CONSTANT_COLOR</td></tr>
+  <tr><td class="enum-value">OneMinusConstantColor</td><td class="enum-gl">GL_ONE_MINUS_CONSTANT_COLOR</td></tr>
+  <tr><td class="enum-value">ConstantAlpha</td><td class="enum-gl">GL_CONSTANT_ALPHA</td></tr>
+  <tr><td class="enum-value">OneMinusConstantAlpha</td><td class="enum-gl">GL_ONE_MINUS_CONSTANT_ALPHA</td></tr>
+</table>
+
+<!-- BlendEquation -->
+<h2 id="BlendEquation">BlendEquation <code>: GLenum</code></h2>
+<p>Blend equation mode for <code>glBlendEquation()</code>.</p>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th></tr>
+  <tr><td class="enum-value">FuncAdd</td><td class="enum-gl">GL_FUNC_ADD</td></tr>
+  <tr><td class="enum-value">FuncSubtract</td><td class="enum-gl">GL_FUNC_SUBTRACT</td></tr>
+  <tr><td class="enum-value">FuncReverseSubtract</td><td class="enum-gl">GL_FUNC_REVERSE_SUBTRACT</td></tr>
+  <tr><td class="enum-value">Min</td><td class="enum-gl">GL_MIN</td></tr>
+  <tr><td class="enum-value">Max</td><td class="enum-gl">GL_MAX</td></tr>
+  <tr><td class="enum-value">Multiply / Screen / Overlay / …</td><td class="enum-gl">KHR_blend_equation_advanced</td></tr>
+</table>
+
+<!-- CompareFunc -->
+<h2 id="CompareFunc">CompareFunc <code>: GLenum</code></h2>
+<p>Comparison function for depth, stencil, and shadow samplers.</p>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>Passes when</th></tr>
+  <tr><td class="enum-value">Never</td><td class="enum-gl">GL_NEVER</td><td>Never</td></tr>
+  <tr><td class="enum-value">Less</td><td class="enum-gl">GL_LESS</td><td>incoming &lt; reference</td></tr>
+  <tr><td class="enum-value">Equal</td><td class="enum-gl">GL_EQUAL</td><td>incoming = reference</td></tr>
+  <tr><td class="enum-value">Lequal</td><td class="enum-gl">GL_LEQUAL</td><td>incoming ≤ reference</td></tr>
+  <tr><td class="enum-value">Greater</td><td class="enum-gl">GL_GREATER</td><td>incoming &gt; reference</td></tr>
+  <tr><td class="enum-value">Notequal</td><td class="enum-gl">GL_NOTEQUAL</td><td>incoming ≠ reference</td></tr>
+  <tr><td class="enum-value">Gequal</td><td class="enum-gl">GL_GEQUAL</td><td>incoming ≥ reference</td></tr>
+  <tr><td class="enum-value">Always</td><td class="enum-gl">GL_ALWAYS</td><td>Always</td></tr>
+</table>
+
+<!-- StencilOp -->
+<h2 id="StencilOp">StencilOp <code>: GLenum</code></h2>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>Action</th></tr>
+  <tr><td class="enum-value">Keep</td><td class="enum-gl">GL_KEEP</td><td>Keep current value</td></tr>
+  <tr><td class="enum-value">Zero</td><td class="enum-gl">GL_ZERO</td><td>Set to 0</td></tr>
+  <tr><td class="enum-value">Replace</td><td class="enum-gl">GL_REPLACE</td><td>Set to reference value</td></tr>
+  <tr><td class="enum-value">Incr</td><td class="enum-gl">GL_INCR</td><td>Clamp increment</td></tr>
+  <tr><td class="enum-value">Decr</td><td class="enum-gl">GL_DECR</td><td>Clamp decrement</td></tr>
+  <tr><td class="enum-value">Invert</td><td class="enum-gl">GL_INVERT</td><td>Bitwise invert</td></tr>
+  <tr><td class="enum-value">IncrWrap</td><td class="enum-gl">GL_INCR_WRAP</td><td>Wrapping increment</td></tr>
+  <tr><td class="enum-value">DecrWrap</td><td class="enum-gl">GL_DECR_WRAP</td><td>Wrapping decrement</td></tr>
+</table>
+
+<!-- CullFace -->
+<h2 id="CullFace">CullFace <code>: GLenum</code></h2>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th></tr>
+  <tr><td class="enum-value">Front</td><td class="enum-gl">GL_FRONT</td></tr>
+  <tr><td class="enum-value">Back</td><td class="enum-gl">GL_BACK</td></tr>
+  <tr><td class="enum-value">FrontAndBack</td><td class="enum-gl">GL_FRONT_AND_BACK</td></tr>
+</table>
+
+<!-- FrontFace -->
+<h2 id="FrontFace">FrontFace <code>: GLenum</code></h2>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>Meaning</th></tr>
+  <tr><td class="enum-value">CW</td><td class="enum-gl">GL_CW</td><td>Clockwise winding = front face</td></tr>
+  <tr><td class="enum-value">CCW</td><td class="enum-gl">GL_CCW</td><td>Counter-clockwise = front face (default)</td></tr>
+</table>
+
+<!-- PrimitiveType -->
+<h2 id="PrimitiveType">PrimitiveType <code>: GLenum</code></h2>
+<p>Primitive topology for <code>glDrawArrays()</code>, <code>glDrawElements()</code>, etc.</p>
+<table>
+  <tr><th>Enumerator</th><th>ES</th></tr>
+  <tr><td class="enum-value">Points</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Lines / LineLoop / LineStrip</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Triangles / TriangleStrip / TriangleFan</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">LinesAdjacency / LineStripAdjacency</td><td><span class="tag tag-es32">3.2</span> geometry shader</td></tr>
+  <tr><td class="enum-value">TrianglesAdjacency / TriangleStripAdjacency</td><td><span class="tag tag-es32">3.2</span> geometry shader</td></tr>
+  <tr><td class="enum-value">Patches</td><td><span class="tag tag-es32">3.2</span> tessellation</td></tr>
+</table>
+
+<!-- DataType -->
+<h2 id="DataType">DataType <code>: GLenum</code></h2>
+<p>Scalar types for vertex attributes, index buffers, and uniforms.</p>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>ES</th></tr>
+  <tr><td class="enum-value">Byte / UnsignedByte</td><td class="enum-gl">GL_BYTE / GL_UNSIGNED_BYTE</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Short / UnsignedShort</td><td class="enum-gl">GL_SHORT / GL_UNSIGNED_SHORT</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Int / UnsignedInt</td><td class="enum-gl">GL_INT / GL_UNSIGNED_INT</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Float</td><td class="enum-gl">GL_FLOAT</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">HalfFloat</td><td class="enum-gl">GL_HALF_FLOAT</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">Int2101010Rev / UnsignedInt2101010Rev</td><td class="enum-gl">packed</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">UnsignedInt10F11F11FRev</td><td class="enum-gl">GL_UNSIGNED_INT_10F_11F_11F_REV</td><td><span class="tag tag-es30">3.0</span></td></tr>
+</table>
+
+<!-- BufferTarget -->
+<h2 id="BufferTarget">BufferTarget <code>: GLenum</code></h2>
+<p>Buffer object binding targets.</p>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>Use</th><th>ES</th></tr>
+  <tr><td class="enum-value">Array</td><td class="enum-gl">GL_ARRAY_BUFFER</td><td>Vertex attribute data</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">ElementArray</td><td class="enum-gl">GL_ELEMENT_ARRAY_BUFFER</td><td>Index data</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">CopyRead / CopyWrite</td><td class="enum-gl">GL_COPY_READ/WRITE_BUFFER</td><td>GPU buffer copies</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">PixelPack / PixelUnpack</td><td class="enum-gl">GL_PIXEL_PACK/UNPACK_BUFFER</td><td>Pixel transfer</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">Uniform</td><td class="enum-gl">GL_UNIFORM_BUFFER</td><td>Uniform blocks</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">TransformFeedback</td><td class="enum-gl">GL_TRANSFORM_FEEDBACK_BUFFER</td><td>TF output</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">DrawIndirect / DispatchIndirect</td><td class="enum-gl">GL_DRAW/DISPATCH_INDIRECT_BUFFER</td><td>Indirect draw/dispatch</td><td><span class="tag tag-es31">3.1</span></td></tr>
+  <tr><td class="enum-value">ShaderStorage</td><td class="enum-gl">GL_SHADER_STORAGE_BUFFER</td><td>SSBO data</td><td><span class="tag tag-es31">3.1</span></td></tr>
+  <tr><td class="enum-value">AtomicCounter</td><td class="enum-gl">GL_ATOMIC_COUNTER_BUFFER</td><td>Atomic counters</td><td><span class="tag tag-es31">3.1</span></td></tr>
+</table>
+
+<!-- BufferUsage -->
+<h2 id="BufferUsage">BufferUsage <code>: GLenum</code></h2>
+<p>Hint passed to <code>glBufferData()</code>. Three access patterns (Stream/Static/Dynamic) × three data flow directions (Draw/Read/Copy).</p>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>Pattern</th></tr>
+  <tr><td class="enum-value">StreamDraw</td><td class="enum-gl">GL_STREAM_DRAW</td><td>Written once, drawn a few times</td></tr>
+  <tr><td class="enum-value">StreamRead</td><td class="enum-gl">GL_STREAM_READ</td><td>Written by GL, read by app a few times</td></tr>
+  <tr><td class="enum-value">StreamCopy</td><td class="enum-gl">GL_STREAM_COPY</td><td>Written by GL, used as GL source a few times</td></tr>
+  <tr><td class="enum-value">StaticDraw</td><td class="enum-gl">GL_STATIC_DRAW</td><td>Written once, drawn many times</td></tr>
+  <tr><td class="enum-value">StaticRead</td><td class="enum-gl">GL_STATIC_READ</td><td>Written by GL, read by app many times</td></tr>
+  <tr><td class="enum-value">StaticCopy</td><td class="enum-gl">GL_STATIC_COPY</td><td>Written by GL, used as GL source many times</td></tr>
+  <tr><td class="enum-value">DynamicDraw</td><td class="enum-gl">GL_DYNAMIC_DRAW</td><td>Written repeatedly, drawn many times</td></tr>
+  <tr><td class="enum-value">DynamicRead</td><td class="enum-gl">GL_DYNAMIC_READ</td><td>Written by GL, read by app repeatedly</td></tr>
+  <tr><td class="enum-value">DynamicCopy</td><td class="enum-gl">GL_DYNAMIC_COPY</td><td>Written by GL, used as GL source repeatedly</td></tr>
+</table>
+
+<!-- MapBufferAccessMask -->
+<h2 id="MapBufferAccessMask">MapBufferAccessMask <code>: GLbitfield</code></h2>
+<p>Flags for <code>glMapBufferRange()</code>. Supports <code>operator|</code>.</p>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>Meaning</th></tr>
+  <tr><td class="enum-value">Read</td><td class="enum-gl">GL_MAP_READ_BIT</td><td>CPU will read mapped data</td></tr>
+  <tr><td class="enum-value">Write</td><td class="enum-gl">GL_MAP_WRITE_BIT</td><td>CPU will write mapped data</td></tr>
+  <tr><td class="enum-value">InvalidateRange</td><td class="enum-gl">GL_MAP_INVALIDATE_RANGE_BIT</td><td>Invalidate the mapped range</td></tr>
+  <tr><td class="enum-value">InvalidateBuffer</td><td class="enum-gl">GL_MAP_INVALIDATE_BUFFER_BIT</td><td>Invalidate the whole buffer</td></tr>
+  <tr><td class="enum-value">FlushExplicit</td><td class="enum-gl">GL_MAP_FLUSH_EXPLICIT_BIT</td><td>App calls glFlushMappedBufferRange</td></tr>
+  <tr><td class="enum-value">Unsynchronized</td><td class="enum-gl">GL_MAP_UNSYNCHRONIZED_BIT</td><td>No GL sync on map</td></tr>
+</table>
+
+<!-- TextureTarget -->
+<h2 id="TextureTarget">TextureTarget <code>: GLenum</code></h2>
+<table>
+  <tr><th>Enumerator</th><th>ES</th></tr>
+  <tr><td class="enum-value">Texture2D</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">TextureCubeMap + 6 face targets</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Texture3D / Texture2DArray</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">Texture2DMultisample</td><td><span class="tag tag-es31">3.1</span></td></tr>
+  <tr><td class="enum-value">TextureBuffer / TextureCubeMapArray / Texture2DMultisampleArray</td><td><span class="tag tag-es32">3.2</span></td></tr>
+</table>
+
+<!-- TextureMinFilter -->
+<h2 id="TextureMinFilter">TextureMinFilter <code>: GLenum</code></h2>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th></tr>
+  <tr><td class="enum-value">Nearest</td><td class="enum-gl">GL_NEAREST</td></tr>
+  <tr><td class="enum-value">Linear</td><td class="enum-gl">GL_LINEAR</td></tr>
+  <tr><td class="enum-value">NearestMipmapNearest</td><td class="enum-gl">GL_NEAREST_MIPMAP_NEAREST</td></tr>
+  <tr><td class="enum-value">LinearMipmapNearest</td><td class="enum-gl">GL_LINEAR_MIPMAP_NEAREST</td></tr>
+  <tr><td class="enum-value">NearestMipmapLinear</td><td class="enum-gl">GL_NEAREST_MIPMAP_LINEAR</td></tr>
+  <tr><td class="enum-value">LinearMipmapLinear</td><td class="enum-gl">GL_LINEAR_MIPMAP_LINEAR</td></tr>
+</table>
+
+<!-- TextureMagFilter -->
+<h2 id="TextureMagFilter">TextureMagFilter <code>: GLenum</code></h2>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th></tr>
+  <tr><td class="enum-value">Nearest</td><td class="enum-gl">GL_NEAREST</td></tr>
+  <tr><td class="enum-value">Linear</td><td class="enum-gl">GL_LINEAR</td></tr>
+</table>
+
+<!-- TextureWrapMode -->
+<h2 id="TextureWrapMode">TextureWrapMode <code>: GLenum</code></h2>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>ES</th></tr>
+  <tr><td class="enum-value">Repeat</td><td class="enum-gl">GL_REPEAT</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">ClampToEdge</td><td class="enum-gl">GL_CLAMP_TO_EDGE</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">MirroredRepeat</td><td class="enum-gl">GL_MIRRORED_REPEAT</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">ClampToBorder</td><td class="enum-gl">GL_CLAMP_TO_BORDER</td><td><span class="tag tag-es32">3.2</span></td></tr>
+</table>
+
+<!-- InternalFormat -->
+<h2 id="InternalFormat">InternalFormat <code>: GLenum</code></h2>
+<p>Sized and unsized internal formats for <code>glTexImage*()</code> and <code>glRenderbufferStorage()</code>.
+Includes base unsized (ES 2.0), sized colour (ES 3.0), and depth/stencil variants.</p>
+<table>
+  <tr><th>Category</th><th>Examples</th><th>ES</th></tr>
+  <tr><td>Base unsized</td><td class="enum-value">Rgba, Rgb, Alpha, Luminance</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td>Sized 8-bit</td><td class="enum-value">Rgba8, Rgb8, R8, Rg8</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td>Sized float</td><td class="enum-value">Rgba16F, Rgba32F, R16F, R32F</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td>Sized integer</td><td class="enum-value">Rgba8UI, Rgba8I, Rgb32I</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td>sRGB</td><td class="enum-value">Srgb8, Srgb8Alpha8</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td>Packed</td><td class="enum-value">R11FG11FB10F, Rgb9E5, Rgb10A2</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td>Depth/stencil</td><td class="enum-value">DepthComponent24/32F, Depth24Stencil8</td><td><span class="tag tag-es30">3.0</span></td></tr>
+</table>
+
+<!-- CompressedInternalFormat -->
+<h2 id="CompressedInternalFormat">CompressedInternalFormat <code>: GLenum</code></h2>
+<p>ETC2/EAC (required ES 3.0) and ASTC LDR (ES 3.2) compressed texture formats.</p>
+<table>
+  <tr><th>Category</th><th>Examples</th><th>ES</th></tr>
+  <tr><td>EAC single channel</td><td class="enum-value">R11Eac, SignedR11Eac, Rg11Eac</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td>ETC2 RGB/RGBA</td><td class="enum-value">Rgb8Etc2, Rgba8Etc2Eac, Srgb8Etc2</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td>ASTC LDR (4×4 … 12×12)</td><td class="enum-value">RgbaAstc4x4 … RgbaAstc12x12</td><td><span class="tag tag-es32">3.2</span></td></tr>
+  <tr><td>ASTC sRGB</td><td class="enum-value">Srgb8Alpha8Astc4x4 … Srgb8Alpha8Astc12x12</td><td><span class="tag tag-es32">3.2</span></td></tr>
+</table>
+
+<!-- ShaderType -->
+<h2 id="ShaderType">ShaderType <code>: GLenum</code></h2>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>ES</th></tr>
+  <tr><td class="enum-value">Vertex</td><td class="enum-gl">GL_VERTEX_SHADER</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Fragment</td><td class="enum-gl">GL_FRAGMENT_SHADER</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Compute</td><td class="enum-gl">GL_COMPUTE_SHADER</td><td><span class="tag tag-es31">3.1</span></td></tr>
+  <tr><td class="enum-value">Geometry</td><td class="enum-gl">GL_GEOMETRY_SHADER</td><td><span class="tag tag-es32">3.2</span></td></tr>
+  <tr><td class="enum-value">TessControl</td><td class="enum-gl">GL_TESS_CONTROL_SHADER</td><td><span class="tag tag-es32">3.2</span></td></tr>
+  <tr><td class="enum-value">TessEvaluation</td><td class="enum-gl">GL_TESS_EVALUATION_SHADER</td><td><span class="tag tag-es32">3.2</span></td></tr>
+</table>
+
+<!-- ShaderStageMask -->
+<h2 id="ShaderStageMask">ShaderStageMask <code>: GLbitfield</code></h2>
+<p>Bitfield for <code>glUseProgramStages()</code> (separable programs). Supports <code>operator|</code>.</p>
+<table>
+  <tr><th>Enumerator</th><th>ES</th></tr>
+  <tr><td class="enum-value">Vertex / Fragment</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Compute</td><td><span class="tag tag-es31">3.1</span></td></tr>
+  <tr><td class="enum-value">Geometry / TessControl / TessEvaluation</td><td><span class="tag tag-es32">3.2</span></td></tr>
+  <tr><td class="enum-value">AllShaderBits</td><td>all stages</td></tr>
+</table>
+
+<!-- UniformType -->
+<h2 id="UniformType">UniformType <code>: GLenum</code></h2>
+<p>Returned by <code>glGetActiveUniform()</code>. Covers scalars, vectors, matrices, samplers, images, and atomics.</p>
+<table>
+  <tr><th>Category</th><th>Examples</th><th>ES</th></tr>
+  <tr><td>Scalars</td><td class="enum-value">Float, Int, UnsignedInt, Bool</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td>Vectors</td><td class="enum-value">FloatVec2/3/4, IntVec2/3/4, BoolVec2/3/4</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td>Matrices</td><td class="enum-value">FloatMat2/3/4, FloatMat2x3, FloatMat3x4, …</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td>Samplers</td><td class="enum-value">Sampler2D, Sampler3D, SamplerCube, Sampler2DArray, …</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td>Shadow samplers</td><td class="enum-value">Sampler2DShadow, SamplerCubeShadow, …</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td>Multisample</td><td class="enum-value">Sampler2DMultisample, IntSampler2DMultisample</td><td><span class="tag tag-es31">3.1</span></td></tr>
+  <tr><td>Image types</td><td class="enum-value">Image2D, Image3D, ImageCube, IntImage2D, …</td><td><span class="tag tag-es31">3.1</span></td></tr>
+  <tr><td>Atomic counter</td><td class="enum-value">UnsignedIntAtomicCounter</td><td><span class="tag tag-es31">3.1</span></td></tr>
+  <tr><td>Buffer/CubeArray/MS Array</td><td class="enum-value">SamplerBuffer, SamplerCubeMapArray, …</td><td><span class="tag tag-es32">3.2</span></td></tr>
+</table>
+
+<!-- FramebufferTarget -->
+<h2 id="FramebufferTarget">FramebufferTarget <code>: GLenum</code></h2>
+<table>
+  <tr><th>Enumerator</th><th>GL constant</th><th>ES</th></tr>
+  <tr><td class="enum-value">Framebuffer</td><td class="enum-gl">GL_FRAMEBUFFER</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">DrawFramebuffer</td><td class="enum-gl">GL_DRAW_FRAMEBUFFER</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">ReadFramebuffer</td><td class="enum-gl">GL_READ_FRAMEBUFFER</td><td><span class="tag tag-es30">3.0</span></td></tr>
+</table>
+
+<!-- FramebufferAttachment -->
+<h2 id="FramebufferAttachment">FramebufferAttachment <code>: GLenum</code></h2>
+<p>Color0–Color31, Depth, Stencil, DepthStencil attachment points.</p>
+
+<!-- FramebufferStatus -->
+<h2 id="FramebufferStatus">FramebufferStatus <code>: GLenum</code></h2>
+<p>Return value of <code>glCheckFramebufferStatus()</code>.</p>
+<table>
+  <tr><th>Enumerator</th><th>Meaning</th><th>ES</th></tr>
+  <tr><td class="enum-value">Complete</td><td>Framebuffer is complete and renderable</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Undefined</td><td>Default framebuffer, no surface</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">IncompleteAttachment</td><td>At least one attachment is incomplete</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">IncompleteMissingAttachment</td><td>No attachments at all</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">IncompleteDimensions</td><td>Attachments differ in size</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">Unsupported</td><td>Format combination not supported</td><td><span class="tag tag-es20">2.0</span></td></tr>
+  <tr><td class="enum-value">IncompleteMultisample</td><td>Inconsistent sample counts</td><td><span class="tag tag-es30">3.0</span></td></tr>
+  <tr><td class="enum-value">IncompleteLayerTargets</td><td>Layered/non-layered mismatch</td><td><span class="tag tag-es32">3.2</span></td></tr>
+</table>
+
+<!-- Debug enums -->
+<h2 id="DebugSource">DebugSource / DebugType / DebugSeverity <code>: GLenum</code></h2>
+<p>Used with <code>glDebugMessageControl()</code> and the debug callback. All are ES 3.2+.</p>
+<table>
+  <tr><th>DebugSource</th><th>DebugType</th><th>DebugSeverity</th></tr>
+  <tr>
+    <td class="enum-value">Api, WindowSystem, ShaderCompiler, ThirdParty, Application, Other, DontCare</td>
+    <td class="enum-value">Error, DeprecatedBehavior, UndefinedBehavior, Portability, Performance, Marker, PushGroup, PopGroup, Other</td>
+    <td class="enum-value">High, Medium, Low, Notification, DontCare</td>
+  </tr>
+</table>
+
+</main>
+</div>
+<footer>meta-gl — OpenEggbert project</footer>
+</body>
+</html>

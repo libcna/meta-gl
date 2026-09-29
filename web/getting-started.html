@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Getting Started — meta-gl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="getting-started.html" class="active">Getting Started</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="enums.html">Enums</a>
+    <a href="functions.html">Functions</a>
+    <a href="types.html">Types</a>
+    <a href="context.html">Context</a>
+    <a href="context-events.html">Ctx Events</a>
+    <a href="capabilities.html">Capabilities</a>
+    <a href="debug.html">Debug</a>
+    <a href="examples.html">Examples</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Steps</h3>
+  <ul>
+    <li><a href="#requirements">Requirements</a></li>
+    <li><a href="#cmake">CMake Integration</a></li>
+    <li><a href="#standalone">Standalone Build</a></li>
+    <li><a href="#init">Initialization</a></li>
+    <li><a href="#loader-compat">Compatible Loaders</a></li>
+    <li><a href="#first-triangle">First Triangle</a></li>
+    <li><a href="#context-loss">Context Loss</a></li>
+    <li><a href="#emscripten">Emscripten / WebGL</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+<h1>Getting Started</h1>
+<p>This guide walks you through adding meta-gl to your project, initializing it, and making your first type-safe OpenGL ES calls.</p>
+
+<h2 id="requirements">Requirements</h2>
+<table>
+  <tr><th>Dependency</th><th>Minimum version</th><th>Notes</th></tr>
+  <tr><td>C++ compiler</td><td>C++23</td><td>GCC 11+, Clang 14+, MSVC 19.33+, Emscripten 3.1.34+</td></tr>
+  <tr><td>CMake</td><td>3.23</td><td>Required for <code>target_sources</code> FILE_SET</td></tr>
+  <tr><td>OpenGL ES headers</td><td>GLES 3.2</td><td><code>GLES3/gl32.h</code> — provided by libgles2-mesa-dev on Debian/Ubuntu</td></tr>
+  <tr><td>GL context provider</td><td>any</td><td>SDL2, GLFW, EGL, Emscripten — meta-gl does not create windows</td></tr>
+</table>
+
+<h2 id="cmake">CMake Integration (recommended)</h2>
+<p>Add meta-gl as a subdirectory in your project:</p>
+<pre><span class="cm"># In your top-level CMakeLists.txt:</span>
+cmake_minimum_required(VERSION <span class="nm">3.23</span>)
+project(my-app)
+
+add_subdirectory(path/to/meta-gl meta-gl)
+
+add_executable(my-app main.cpp)
+target_link_libraries(my-app PRIVATE <span class="nm">meta-gl::meta-gl</span>)
+target_compile_features(my-app PRIVATE <span class="nm">cxx_std_23</span>)</pre>
+
+<p>The <code>meta-gl::meta-gl</code> target propagates the include path automatically.
+You only need the one <code>target_link_libraries</code> call.</p>
+
+<h2 id="standalone">Standalone Build (for development)</h2>
+<pre><span class="cm"># Configure</span>
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+<span class="cm"># Build</span>
+cmake --build build -j$(nproc)
+
+<span class="cm"># The static library is at:</span>
+<span class="cm"># build/libmeta-gl.a  (Linux) or build/meta-gl.lib (Windows)</span></pre>
+
+<h2 id="init">Initialization</h2>
+<p>
+  Before calling any <code>metagl::gl*</code> function you must initialize the function
+  pointer table. Call <code>metagl::Initialize()</code> exactly once after your GL context
+  has been created. On context loss/restore, call it again.
+</p>
+<pre><span class="kw">#include</span> <span class="st">&lt;metagl/metagl.hpp&gt;</span>
+
+<span class="cm">// After SDL_GL_CreateContext / glfwMakeContextCurrent / eglMakeCurrent:</span>
+<span class="ty">bool</span> ok = metagl::<span class="fn">Initialize</span>(SDL_GL_GetProcAddress);
+<span class="kw">if</span> (!ok) {
+    std::cerr &lt;&lt; <span class="st">"meta-gl: failed to load core GL functions\n"</span>;
+    <span class="kw">return</span> <span class="val">1</span>;
+}
+
+<span class="cm">// Optionally verify individual functions:</span>
+<span class="kw">if</span> (!metagl::<span class="fn">IsFunctionAvailable</span>(<span class="st">"glDrawElementsBaseVertex"</span>)) {
+    <span class="cm">// ES 3.2 feature not present — disable that code path</span>
+}</pre>
+
+<div class="callout ok">
+  <p><strong>Thread safety:</strong> <code>Initialize()</code> is not thread-safe. Call it from the
+  thread that owns the GL context, before spawning render threads.</p>
+</div>
+
+<h2 id="loader-compat">Compatible Loader Functions</h2>
+<p>
+  Any function with the signature <code>void* (const char* name)</code> works as a loader.
+  Common choices:
+</p>
+<table>
+  <tr><th>Library</th><th>Loader function</th></tr>
+  <tr><td>SDL2</td><td><code>SDL_GL_GetProcAddress</code></td></tr>
+  <tr><td>SDL3</td><td><code>SDL_GL_GetProcAddress</code></td></tr>
+  <tr><td>GLFW</td><td><code>glfwGetProcAddress</code></td></tr>
+  <tr><td>EGL (raw)</td><td><code>eglGetProcAddress</code></td></tr>
+  <tr><td>Emscripten</td><td><code>emscripten_webgl_get_proc_address</code></td></tr>
+  <tr><td>Custom</td><td>Any <code>void*(const char*)</code> callable</td></tr>
+</table>
+
+<h2 id="first-triangle">First Triangle (complete example)</h2>
+<pre><span class="kw">#include</span> <span class="st">&lt;metagl/metagl.hpp&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;SDL2/SDL.h&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;array&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;cstdio&gt;</span>
+
+<span class="kw">static const char*</span> vert_src = <span class="st">R"(#version 300 es
+layout(location=0) in vec2 aPos;
+void main() { gl_Position = vec4(aPos, 0.0, 1.0); })"</span>;
+
+<span class="kw">static const char*</span> frag_src = <span class="st">R"(#version 300 es
+precision mediump float;
+out vec4 fragColor;
+void main() { fragColor = vec4(0.2, 0.7, 1.0, 1.0); })"</span>;
+
+<span class="ty">int</span> <span class="fn">main</span>() {
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, <span class="val">3</span>);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, <span class="val">0</span>);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_Window* win = SDL_CreateWindow(<span class="st">"meta-gl demo"</span>,
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, <span class="val">800</span>, <span class="val">600</span>,
+        SDL_WINDOW_OPENGL);
+    SDL_GLContext ctx = SDL_GL_CreateContext(win);
+
+    <span class="cm">// Initialize meta-gl</span>
+    metagl::<span class="fn">Initialize</span>(SDL_GL_GetProcAddress);
+
+    <span class="cm">// Build shader program</span>
+    <span class="ty">metagl::ShaderId</span> vs = metagl::<span class="fn">glCreateShader</span>(metagl::ShaderType::Vertex);
+    metagl::<span class="fn">glShaderSource</span>(vs, vert_src);
+    metagl::<span class="fn">glCompileShader</span>(vs);
+
+    <span class="ty">metagl::ShaderId</span> fs = metagl::<span class="fn">glCreateShader</span>(metagl::ShaderType::Fragment);
+    metagl::<span class="fn">glShaderSource</span>(fs, frag_src);
+    metagl::<span class="fn">glCompileShader</span>(fs);
+
+    <span class="ty">metagl::ProgramId</span> prog = metagl::<span class="fn">glCreateProgram</span>();
+    metagl::<span class="fn">glAttachShader</span>(prog, vs);
+    metagl::<span class="fn">glAttachShader</span>(prog, fs);
+    metagl::<span class="fn">glLinkProgram</span>(prog);
+    metagl::<span class="fn">glUseProgram</span>(prog);
+
+    <span class="cm">// Upload triangle vertices</span>
+    std::array&lt;<span class="ty">float</span>, <span class="val">6</span>&gt; verts = { <span class="val">-0.5f</span>, <span class="val">-0.5f</span>,  <span class="val">0.5f</span>, <span class="val">-0.5f</span>,  <span class="val">0.0f</span>, <span class="val">0.5f</span> };
+    <span class="ty">metagl::VertexArrayId</span> vao;
+    <span class="ty">metagl::BufferId</span> vbo;
+    metagl::<span class="fn">glGenVertexArrays</span>(<span class="val">1</span>, &amp;vao);
+    metagl::<span class="fn">glBindVertexArray</span>(vao);
+    metagl::<span class="fn">glGenBuffers</span>(<span class="val">1</span>, &amp;vbo);
+    metagl::<span class="fn">glBindBuffer</span>(metagl::BufferTarget::Array, vbo);
+    metagl::<span class="fn">glBufferData</span>(metagl::BufferTarget::Array,
+        (<span class="ty">GLsizeiptr</span>)(verts.size() * <span class="kw">sizeof</span>(<span class="ty">float</span>)), verts.data(),
+        metagl::BufferUsage::StaticDraw);
+    metagl::<span class="fn">glEnableVertexAttribArray</span>(<span class="val">0</span>);
+    metagl::<span class="fn">glVertexAttribPointer</span>(<span class="val">0</span>, <span class="val">2</span>, metagl::DataType::Float,
+        GL_FALSE, <span class="val">0</span>, <span class="kw">nullptr</span>);
+
+    <span class="cm">// Render loop</span>
+    <span class="ty">bool</span> running = <span class="kw">true</span>;
+    <span class="kw">while</span> (running) {
+        SDL_Event e;
+        <span class="kw">while</span> (SDL_PollEvent(&amp;e))
+            <span class="kw">if</span> (e.type == SDL_QUIT) running = <span class="kw">false</span>;
+
+        metagl::<span class="fn">glClearColor</span>(<span class="val">0.1f</span>, <span class="val">0.1f</span>, <span class="val">0.1f</span>, <span class="val">1.0f</span>);
+        metagl::<span class="fn">glClear</span>(metagl::ClearBufferBit::Color);
+        metagl::<span class="fn">glDrawArrays</span>(metagl::PrimitiveType::Triangles, <span class="val">0</span>, <span class="val">3</span>);
+        SDL_GL_SwapWindow(win);
+    }
+    <span class="kw">return</span> <span class="val">0</span>;
+}</pre>
+
+<h2 id="context-loss">Handling Context Loss</h2>
+<p>On Android and WebGL contexts can be lost at any time. meta-gl provides a generation counter
+to detect stale handles:</p>
+<pre><span class="cm">// Platform callback (e.g. Emscripten HTMLELEMENT_EVENT_WEBGLCONTEXTLOST):</span>
+metagl::<span class="fn">MarkContextLost</span>();
+
+<span class="cm">// In your render loop guard:</span>
+<span class="kw">if</span> (metagl::<span class="fn">IsContextLost</span>()) {
+    <span class="kw">return</span>; <span class="cm">// skip GL calls</span>
+}
+
+<span class="cm">// On restore:</span>
+metagl::<span class="fn">Initialize</span>(getProcAddress); <span class="cm">// reloads function pointers, bumps generation</span>
+<span class="ty">uint64_t</span> gen = metagl::<span class="fn">GetContextGeneration</span>();
+<span class="cm">// Recreate all textures, buffers, programs ...</span></pre>
+
+<h2 id="emscripten">Emscripten / WebGL</h2>
+<pre><span class="cm"># Configure for Emscripten:</span>
+emcmake cmake -S . -B build-web \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_EXE_LINKER_FLAGS="-s USE_WEBGL2=1 -s MIN_WEBGL_VERSION=2"
+
+emmake cmake --build build-web</pre>
+<p>When compiled with Emscripten, <code>metagl::GetCapabilities().webgl2</code> returns <code>true</code>
+and the context info reflects the WebGL API kind. Use <code>metagl/Emscripten.hpp</code> for
+WebGL-specific canvas and event helpers.</p>
+
+</main>
+</div>
+<footer>meta-gl — OpenEggbert project</footer>
+</body>
+</html>

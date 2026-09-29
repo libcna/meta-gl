@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Context API — meta-gl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="getting-started.html">Getting Started</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="enums.html">Enums</a>
+    <a href="functions.html">Functions</a>
+    <a href="types.html">Types</a>
+    <a href="context.html" class="active">Context</a>
+    <a href="context-events.html">Ctx Events</a>
+    <a href="capabilities.html">Capabilities</a>
+    <a href="debug.html">Debug</a>
+    <a href="examples.html">Examples</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Sections</h3>
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#apikind">ApiKind</a></li>
+    <li><a href="#contextstatus">ContextStatus</a></li>
+    <li><a href="#contextinfo">ContextInfo</a></li>
+    <li><a href="#api">API Functions</a></li>
+    <li><a href="#lifecycle">Lifecycle Diagram</a></li>
+    <li><a href="#contextloss">Handling Context Loss</a></li>
+    <li><a href="#android">Android Notes</a></li>
+    <li><a href="#webgl">WebGL Notes</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+<h1>Context API</h1>
+<p>
+  Declared in <code>include/metagl/Context.hpp</code>. The Context API tracks the
+  lifecycle of the host-provided OpenGL ES context. meta-gl does not create or
+  destroy contexts; it only observes and reports their state.
+</p>
+
+<h2 id="overview">Overview</h2>
+<p>
+  When you call <code>metagl::Initialize()</code>, it loads all GL function pointers,
+  detects the API kind (OpenGL ES vs WebGL) and version, fills a <code>ContextInfo</code>
+  snapshot, and marks the context as <code>Current</code>. A monotonically-increasing
+  <em>generation counter</em> is bumped each time — this lets resource managers detect
+  stale handles after context loss.
+</p>
+
+<h2 id="apikind">ApiKind</h2>
+<pre><span class="kw">enum class</span> <span class="ty">ApiKind</span> : std::uint8_t {
+    Unknown,
+    OpenGLES,  <span class="cm">// EGL / ANGLE / native GLES</span>
+    WebGL      <span class="cm">// Emscripten WebGL 1 or 2</span>
+};</pre>
+
+<h2 id="contextstatus">ContextStatus</h2>
+<pre><span class="kw">enum class</span> <span class="ty">ContextStatus</span> : std::uint8_t {
+    NotCreated,  <span class="cm">// Initialize() has never been called</span>
+    Current,     <span class="cm">// Context is active and rendering is possible</span>
+    Lost,        <span class="cm">// Context was lost; all GL handles are invalid</span>
+    Restored     <span class="cm">// Context restored; resources must be recreated</span>
+};</pre>
+
+<h2 id="contextinfo">ContextInfo</h2>
+<p>Since v0.2.0, <code>ContextInfo</code> holds only lifecycle state. Version flags, vendor/renderer strings,
+and extension lists have moved to <a href="capabilities.html"><code>Capabilities</code></a>.</p>
+<pre><span class="kw">struct</span> <span class="ty">ContextInfo</span> {
+    <span class="ty">ApiKind</span>  api        = ApiKind::Unknown;
+    <span class="ty">int</span>      major      = <span class="val">0</span>;
+    <span class="ty">int</span>      minor      = <span class="val">0</span>;
+
+    <span class="cm">/// Monotonically increasing. Bumped by each Initialize() call.</span>
+    std::uint64_t generation = <span class="val">0</span>;
+
+    <span class="ty">ContextStatus</span> status = ContextStatus::NotCreated;
+};</pre>
+<div class="callout">
+  <p><strong>Breaking change (v0.2.0):</strong> <code>vendor</code>, <code>renderer</code>, <code>gles20</code>–<code>gles32</code>,
+  and <code>webgl1</code>/<code>webgl2</code> fields were removed from <code>ContextInfo</code>. Use
+  <code>metagl::GetCapabilities()</code> for feature detection instead.</p>
+</div>
+
+<h2 id="api">API Functions</h2>
+<table>
+  <tr><th>Function</th><th>Returns</th><th>Description</th></tr>
+  <tr>
+    <td><code>GetContextInfo()</code></td>
+    <td><code>ContextInfo</code> (copy)</td>
+    <td>Full snapshot of context state</td>
+  </tr>
+  <tr>
+    <td><code>GetContextGeneration()</code></td>
+    <td><code>uint64_t</code></td>
+    <td>Current generation counter</td>
+  </tr>
+  <tr>
+    <td><code>GetContextStatus()</code></td>
+    <td><code>ContextStatus</code></td>
+    <td>Current lifecycle status</td>
+  </tr>
+  <tr>
+    <td><code>IsContextLost()</code></td>
+    <td><code>bool</code></td>
+    <td>True when status == Lost</td>
+  </tr>
+  <tr>
+    <td><code>MarkContextLost()</code></td>
+    <td><code>void</code></td>
+    <td>Call from platform lost-callback</td>
+  </tr>
+  <tr>
+    <td><code>MarkContextRestored()</code></td>
+    <td><code>void</code></td>
+    <td>Call after re-initialize (or it's done automatically)</td>
+  </tr>
+  <tr>
+    <td><code>SetContextInfo(ContextInfo)</code></td>
+    <td><code>void</code></td>
+    <td>Internal — used by <code>Initialize()</code></td>
+  </tr>
+</table>
+<p>All query functions are marked <code>[[nodiscard]]</code> and <code>noexcept</code>.</p>
+
+<h2 id="lifecycle">Lifecycle Diagram</h2>
+<pre>        [ App startup ]
+               │
+               ▼
+      ┌────────────────┐
+      │  NotCreated    │◄───────────────────────┐
+      └───────┬────────┘                        │
+              │ Initialize(loader)              │
+              ▼                                 │
+      ┌────────────────┐                        │
+      │    Current     │─────────────┐          │
+      └───────┬────────┘             │          │
+              │ MarkContextLost()    │          │
+              │ (platform callback)  │          │
+              ▼                      │          │
+      ┌────────────────┐             │          │
+      │      Lost      │             │          │
+      └───────┬────────┘             │          │
+              │ Initialize(loader)   │          │
+              ▼                      │          │
+      ┌────────────────┐             │          │
+      │   Restored     │─────────────┘          │
+      └───────┬────────┘ (rendering resumes)    │
+              │ app fully reloads resources      │
+              └──────────────────────────────────┘</pre>
+
+<h2 id="contextloss">Handling Context Loss</h2>
+<p>
+  After context loss, all GPU object handles (textures, buffers, programs, VAOs) are
+  invalid. You must recreate everything. The generation counter makes it easy to
+  track which resources belong to which context instance:
+</p>
+<pre><span class="kw">struct</span> <span class="ty">ManagedTexture</span> {
+    <span class="ty">GLuint</span>   id  = <span class="val">0</span>;
+    uint64_t gen = <span class="val">0</span>;  <span class="cm">// generation when this was created</span>
+
+    <span class="ty">bool</span> isValid() <span class="kw">const</span> {
+        <span class="kw">return</span> id != <span class="val">0</span> &amp;&amp; gen == metagl::<span class="fn">GetContextGeneration</span>();
+    }
+
+    <span class="kw">void</span> upload(/* ... */) {
+        <span class="kw">if</span> (!isValid()) {
+            metagl::<span class="fn">glGenTextures</span>(<span class="val">1</span>, &amp;id);
+            gen = metagl::<span class="fn">GetContextGeneration</span>();
+        }
+        <span class="cm">// upload data ...</span>
+    }
+};
+
+<span class="cm">// In render loop:</span>
+<span class="kw">if</span> (metagl::<span class="fn">IsContextLost</span>()) <span class="kw">return</span>;
+texture.upload(data);  <span class="cm">// automatically recreates if generation changed</span></pre>
+
+<h2 id="android">Android Notes</h2>
+<ul>
+  <li>Call <code>metagl::Initialize()</code> from <code>GLSurfaceView.Renderer::onSurfaceCreated()</code> via JNI or from the SDL/EGL context-creation path.</li>
+  <li>Call it again from <code>onSurfaceCreated()</code> — it always recreates from scratch.</li>
+  <li>After context loss: old textures, buffers, shaders are <em>gone</em>. Do not call <code>glDelete*</code> on them — the driver already freed them.</li>
+  <li>The generation counter is the idiomatic way to detect this situation.</li>
+</ul>
+
+<h2 id="webgl">WebGL Notes</h2>
+<ul>
+  <li>Register the Emscripten <code>HTMLELEMENT_EVENT_WEBGLCONTEXTLOST</code> callback and call <code>metagl::MarkContextLost()</code> from it.</li>
+  <li>Register <code>HTMLELEMENT_EVENT_WEBGLCONTEXTRESTORED</code> and call <code>metagl::Initialize(emscripten_webgl_get_proc_address)</code>.</li>
+  <li>On WebGL, <code>GetContextInfo().api == ApiKind::WebGL</code>; for WebGL 2 check <code>GetCapabilities().webgl2 == true</code>.</li>
+</ul>
+
+</main>
+</div>
+<footer>meta-gl — OpenEggbert project</footer>
+</body>
+</html>

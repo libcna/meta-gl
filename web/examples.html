@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Examples — meta-gl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="getting-started.html">Getting Started</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="enums.html">Enums</a>
+    <a href="functions.html">Functions</a>
+    <a href="types.html">Types</a>
+    <a href="context.html">Context</a>
+    <a href="context-events.html">Ctx Events</a>
+    <a href="capabilities.html">Capabilities</a>
+    <a href="debug.html">Debug</a>
+    <a href="examples.html" class="active">Examples</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Examples</h3>
+  <ul>
+    <li><a href="#init">Initialization</a></li>
+    <li><a href="#clear">Clear Screen</a></li>
+    <li><a href="#triangle">Triangle</a></li>
+    <li><a href="#texture">Texture Upload</a></li>
+    <li><a href="#ubo">Uniform Buffer</a></li>
+    <li><a href="#fbo">Offscreen FBO</a></li>
+    <li><a href="#instancing">Instanced Draw</a></li>
+    <li><a href="#compute">Compute Shader</a></li>
+    <li><a href="#blending">Alpha Blending</a></li>
+    <li><a href="#stencil">Stencil Masking</a></li>
+    <li><a href="#errors">Error Handling</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+<h1>Examples</h1>
+<p>Practical code examples showing meta-gl's type-safe API side by side with the equivalent raw OpenGL calls.</p>
+
+<!-- Initialization -->
+<h2 id="init">Initialization</h2>
+<pre><span class="kw">#include</span> <span class="st">&lt;metagl/metagl.hpp&gt;</span>
+
+<span class="cm">// Works with SDL2, GLFW, EGL, or any GetProcAddress-compatible function:</span>
+<span class="ty">bool</span> ok = metagl::<span class="fn">Initialize</span>(SDL_GL_GetProcAddress);
+<span class="kw">if</span> (!ok) {
+    fprintf(stderr, <span class="st">"Failed to load core GL functions\n"</span>);
+    <span class="kw">return</span> EXIT_FAILURE;
+}
+
+<span class="kw">const auto</span>&amp; caps = metagl::<span class="fn">GetCapabilities</span>();
+printf(<span class="st">"Renderer: %s\n"</span>, caps.renderer.c_str());
+printf(<span class="st">"ES3.1: %d  ES3.2: %d\n"</span>, caps.gles31, caps.gles32);</pre>
+
+<!-- Clear Screen -->
+<h2 id="clear">Clear Screen</h2>
+<div class="grid2">
+  <div class="card">
+    <h4>Raw OpenGL</h4>
+    <pre style="margin:0">glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+glClear(GL_COLOR_BUFFER_BIT |
+        GL_DEPTH_BUFFER_BIT);</pre>
+  </div>
+  <div class="card">
+    <h4>meta-gl</h4>
+    <pre style="margin:0">metagl::<span class="fn">glClearColor</span>(0.1f, 0.1f, 0.1f, 1.0f);
+metagl::<span class="fn">glClear</span>(
+    metagl::ClearBufferBit::Color |
+    metagl::ClearBufferBit::Depth);</pre>
+  </div>
+</div>
+
+<!-- Triangle -->
+<h2 id="triangle">Triangle (VAO + VBO + shader)</h2>
+<pre><span class="kw">#include</span> <span class="st">&lt;metagl/metagl.hpp&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;array&gt;</span>
+
+<span class="kw">static const char*</span> vert = <span class="st">R"(#version 300 es
+layout(location=0) in vec2 aPos;
+void main() { gl_Position = vec4(aPos, 0.0, 1.0); })"</span>;
+
+<span class="kw">static const char*</span> frag = <span class="st">R"(#version 300 es
+precision mediump float;
+out vec4 color;
+void main() { color = vec4(1.0, 0.5, 0.2, 1.0); })"</span>;
+
+<span class="kw">static auto</span> <span class="fn">compileShader</span>(metagl::ShaderType type, <span class="kw">const char</span>* src) {
+    <span class="ty">GLuint</span> id = metagl::<span class="fn">glCreateShader</span>(type);
+    metagl::<span class="fn">glShaderSource</span>(id, <span class="val">1</span>, &amp;src, <span class="kw">nullptr</span>);
+    metagl::<span class="fn">glCompileShader</span>(id);
+    <span class="ty">GLint</span> ok = <span class="val">0</span>;
+    metagl::<span class="fn">glGetShaderiv</span>(id, metagl::ShaderParameter::CompileStatus, &amp;ok);
+    <span class="kw">if</span> (!ok) {
+        <span class="ty">char</span> log[<span class="val">512</span>];
+        metagl::<span class="fn">glGetShaderInfoLog</span>(id, <span class="kw">sizeof</span>(log), <span class="kw">nullptr</span>, log);
+        fprintf(stderr, <span class="st">"Shader error: %s\n"</span>, log);
+    }
+    <span class="kw">return</span> id;
+}
+
+<span class="ty">GLuint</span> <span class="fn">buildProgram</span>() {
+    <span class="ty">GLuint</span> vs   = <span class="fn">compileShader</span>(metagl::ShaderType::Vertex,   vert);
+    <span class="ty">GLuint</span> fs   = <span class="fn">compileShader</span>(metagl::ShaderType::Fragment, frag);
+    <span class="ty">GLuint</span> prog = metagl::<span class="fn">glCreateProgram</span>();
+    metagl::<span class="fn">glAttachShader</span>(prog, vs);
+    metagl::<span class="fn">glAttachShader</span>(prog, fs);
+    metagl::<span class="fn">glLinkProgram</span>(prog);
+    metagl::<span class="fn">glDeleteShader</span>(vs);
+    metagl::<span class="fn">glDeleteShader</span>(fs);
+    <span class="kw">return</span> prog;
+}
+
+<span class="ty">GLuint</span> vao, vbo;
+
+<span class="kw">void</span> <span class="fn">setupTriangle</span>() {
+    std::array&lt;<span class="ty">float</span>, <span class="val">6</span>&gt; verts = { <span class="val">-0.5f</span>, <span class="val">-0.5f</span>,  <span class="val">0.5f</span>, <span class="val">-0.5f</span>,  <span class="val">0.0f</span>, <span class="val">0.5f</span> };
+
+    metagl::<span class="fn">glGenVertexArrays</span>(<span class="val">1</span>, &amp;vao);
+    metagl::<span class="fn">glBindVertexArray</span>(vao);
+
+    metagl::<span class="fn">glGenBuffers</span>(<span class="val">1</span>, &amp;vbo);
+    metagl::<span class="fn">glBindBuffer</span>(metagl::BufferTarget::Array, vbo);
+    metagl::<span class="fn">glBufferData</span>(metagl::BufferTarget::Array,
+        (<span class="ty">GLsizeiptr</span>)(verts.size() * <span class="kw">sizeof</span>(<span class="ty">float</span>)),
+        verts.data(), metagl::BufferUsage::StaticDraw);
+
+    metagl::<span class="fn">glEnableVertexAttribArray</span>(<span class="val">0</span>);
+    metagl::<span class="fn">glVertexAttribPointer</span>(<span class="val">0</span>, <span class="val">2</span>, metagl::DataType::Float,
+        GL_FALSE, <span class="val">2</span> * <span class="kw">sizeof</span>(<span class="ty">float</span>), <span class="kw">nullptr</span>);
+}
+
+<span class="kw">void</span> <span class="fn">drawTriangle</span>() {
+    metagl::<span class="fn">glBindVertexArray</span>(vao);
+    metagl::<span class="fn">glDrawArrays</span>(metagl::PrimitiveType::Triangles, <span class="val">0</span>, <span class="val">3</span>);
+}</pre>
+
+<!-- Texture Upload -->
+<h2 id="texture">Texture Upload</h2>
+<pre><span class="kw">void</span> <span class="fn">uploadRGBATexture</span>(<span class="kw">const</span> <span class="ty">uint8_t</span>* pixels, <span class="ty">int</span> w, <span class="ty">int</span> h) {
+    <span class="ty">GLuint</span> tex;
+    metagl::<span class="fn">glGenTextures</span>(<span class="val">1</span>, &amp;tex);
+    metagl::<span class="fn">glBindTexture</span>(metagl::TextureTarget::Texture2D, tex);
+
+    <span class="cm">// Set wrapping and filtering:</span>
+    metagl::<span class="fn">glTexParameteri</span>(metagl::TextureTarget::Texture2D,
+        metagl::TextureParameter::WrapS,
+        (<span class="ty">GLint</span>)metagl::TextureWrapMode::ClampToEdge);
+    metagl::<span class="fn">glTexParameteri</span>(metagl::TextureTarget::Texture2D,
+        metagl::TextureParameter::WrapT,
+        (<span class="ty">GLint</span>)metagl::TextureWrapMode::ClampToEdge);
+    metagl::<span class="fn">glTexParameteri</span>(metagl::TextureTarget::Texture2D,
+        metagl::TextureParameter::MinFilter,
+        (<span class="ty">GLint</span>)metagl::TextureMinFilter::LinearMipmapLinear);
+    metagl::<span class="fn">glTexParameteri</span>(metagl::TextureTarget::Texture2D,
+        metagl::TextureParameter::MagFilter,
+        (<span class="ty">GLint</span>)metagl::TextureMagFilter::Linear);
+
+    <span class="cm">// Upload pixel data:</span>
+    metagl::<span class="fn">glPixelStorei</span>(metagl::PixelStoreParam::UnpackAlignment, <span class="val">1</span>);
+    metagl::<span class="fn">glTexImage2D</span>(metagl::TextureTarget::Texture2D, <span class="val">0</span>,
+        metagl::InternalFormat::Rgba8,
+        w, h, <span class="val">0</span>,
+        metagl::PixelFormat::Rgba,
+        metagl::PixelType::UnsignedByte,
+        pixels);
+
+    metagl::<span class="fn">glGenerateMipmap</span>(metagl::TextureTarget::Texture2D);
+}</pre>
+
+<!-- UBO -->
+<h2 id="ubo">Uniform Buffer Object (ES 3.0+)</h2>
+<pre><span class="cm">// Example: per-frame camera matrices in a UBO</span>
+<span class="kw">struct</span> <span class="ty">FrameData</span> {
+    <span class="ty">float</span> view[<span class="val">16</span>];
+    <span class="ty">float</span> proj[<span class="val">16</span>];
+};
+
+<span class="ty">GLuint</span> ubo;
+metagl::<span class="fn">glGenBuffers</span>(<span class="val">1</span>, &amp;ubo);
+metagl::<span class="fn">glBindBuffer</span>(metagl::BufferTarget::Uniform, ubo);
+metagl::<span class="fn">glBufferData</span>(metagl::BufferTarget::Uniform,
+    <span class="kw">sizeof</span>(<span class="ty">FrameData</span>), <span class="kw">nullptr</span>, metagl::BufferUsage::DynamicDraw);
+
+<span class="cm">// Bind to binding point 0:</span>
+metagl::<span class="fn">glBindBufferBase</span>(metagl::BufferTarget::Uniform, <span class="val">0</span>, ubo);
+
+<span class="cm">// Per-frame update:</span>
+FrameData frame = { /* ... */ };
+metagl::<span class="fn">glBindBuffer</span>(metagl::BufferTarget::Uniform, ubo);
+metagl::<span class="fn">glBufferSubData</span>(metagl::BufferTarget::Uniform,
+    <span class="val">0</span>, <span class="kw">sizeof</span>(frame), &amp;frame);
+
+<span class="cm">// In shader:  layout(binding=0, std140) uniform FrameData { mat4 view; mat4 proj; };</span>
+<span class="cm">// In program: link binding index to UBO slot</span>
+<span class="ty">GLuint</span> blockIdx = metagl::<span class="fn">glGetUniformBlockIndex</span>(prog, <span class="st">"FrameData"</span>);
+metagl::<span class="fn">glUniformBlockBinding</span>(prog, blockIdx, <span class="val">0</span>);</pre>
+
+<!-- FBO -->
+<h2 id="fbo">Offscreen Framebuffer (Render to Texture)</h2>
+<pre><span class="ty">GLuint</span> fbo, colorTex, depthRbo;
+
+<span class="kw">void</span> <span class="fn">createFBO</span>(<span class="ty">int</span> w, <span class="ty">int</span> h) {
+    <span class="cm">// Color attachment — immutable texture (ES 3.0)</span>
+    metagl::<span class="fn">glGenTextures</span>(<span class="val">1</span>, &amp;colorTex);
+    metagl::<span class="fn">glBindTexture</span>(metagl::TextureTarget::Texture2D, colorTex);
+    metagl::<span class="fn">glTexStorage2D</span>(metagl::TextureTarget::Texture2D,
+        <span class="val">1</span>, metagl::InternalFormat::Rgba8, w, h);
+
+    <span class="cm">// Depth attachment — renderbuffer</span>
+    metagl::<span class="fn">glGenRenderbuffers</span>(<span class="val">1</span>, &amp;depthRbo);
+    metagl::<span class="fn">glBindRenderbuffer</span>(metagl::RenderbufferTarget::Renderbuffer, depthRbo);
+    metagl::<span class="fn">glRenderbufferStorage</span>(metagl::RenderbufferTarget::Renderbuffer,
+        metagl::InternalFormat::DepthComponent24, w, h);
+
+    <span class="cm">// Assemble FBO</span>
+    metagl::<span class="fn">glGenFramebuffers</span>(<span class="val">1</span>, &amp;fbo);
+    metagl::<span class="fn">glBindFramebuffer</span>(metagl::FramebufferTarget::Framebuffer, fbo);
+    metagl::<span class="fn">glFramebufferTexture2D</span>(
+        metagl::FramebufferTarget::Framebuffer,
+        metagl::FramebufferAttachment::Color0,
+        metagl::TextureTarget::Texture2D, colorTex, <span class="val">0</span>);
+    metagl::<span class="fn">glFramebufferRenderbuffer</span>(
+        metagl::FramebufferTarget::Framebuffer,
+        metagl::FramebufferAttachment::Depth,
+        metagl::RenderbufferTarget::Renderbuffer, depthRbo);
+
+    <span class="cm">// Verify completeness</span>
+    <span class="kw">auto</span> status = metagl::<span class="fn">glCheckFramebufferStatus</span>(
+        metagl::FramebufferTarget::Framebuffer);
+    <span class="kw">if</span> (status != metagl::FramebufferStatus::Complete) {
+        fprintf(stderr, <span class="st">"FBO incomplete\n"</span>);
+    }
+}
+
+<span class="kw">void</span> <span class="fn">renderToFBO</span>() {
+    metagl::<span class="fn">glBindFramebuffer</span>(metagl::FramebufferTarget::Framebuffer, fbo);
+    <span class="cm">// ... render scene ...</span>
+    metagl::<span class="fn">glBindFramebuffer</span>(metagl::FramebufferTarget::Framebuffer, <span class="val">0</span>);
+}</pre>
+
+<!-- Instancing -->
+<h2 id="instancing">Instanced Drawing (ES 3.0+)</h2>
+<pre><span class="cm">// Per-instance data: translation offsets</span>
+std::array&lt;<span class="ty">float</span>, <span class="val">200</span>&gt; offsets; <span class="cm">// 100 instances × vec2</span>
+<span class="cm">// ... fill offsets ...</span>
+
+<span class="ty">GLuint</span> instanceVbo;
+metagl::<span class="fn">glGenBuffers</span>(<span class="val">1</span>, &amp;instanceVbo);
+metagl::<span class="fn">glBindBuffer</span>(metagl::BufferTarget::Array, instanceVbo);
+metagl::<span class="fn">glBufferData</span>(metagl::BufferTarget::Array,
+    <span class="kw">sizeof</span>(offsets), offsets.data(), metagl::BufferUsage::StaticDraw);
+
+<span class="cm">// Attribute index 1 = per-instance offset</span>
+metagl::<span class="fn">glEnableVertexAttribArray</span>(<span class="val">1</span>);
+metagl::<span class="fn">glVertexAttribPointer</span>(<span class="val">1</span>, <span class="val">2</span>, metagl::DataType::Float,
+    GL_FALSE, <span class="val">2</span> * <span class="kw">sizeof</span>(<span class="ty">float</span>), <span class="kw">nullptr</span>);
+metagl::<span class="fn">glVertexAttribDivisor</span>(<span class="val">1</span>, <span class="val">1</span>); <span class="cm">// advance once per instance</span>
+
+<span class="cm">// Draw 100 instances of the base mesh:</span>
+metagl::<span class="fn">glDrawArraysInstanced</span>(metagl::PrimitiveType::Triangles, <span class="val">0</span>, <span class="val">3</span>, <span class="val">100</span>);</pre>
+
+<!-- Compute -->
+<h2 id="compute">Compute Shader (ES 3.1+)</h2>
+<pre><span class="kw">static const char*</span> computeSrc = <span class="st">R"(#version 310 es
+layout(local_size_x=64) in;
+layout(std430, binding=0) buffer Data {
+    float values[];
+};
+void main() {
+    uint idx = gl_GlobalInvocationID.x;
+    values[idx] *= 2.0;
+})"</span>;
+
+<span class="kw">void</span> <span class="fn">runCompute</span>(<span class="ty">GLuint</span> ssbo, <span class="ty">GLuint</span> elementCount) {
+    <span class="ty">GLuint</span> cs = metagl::<span class="fn">glCreateShader</span>(metagl::ShaderType::Compute);
+    metagl::<span class="fn">glShaderSource</span>(cs, <span class="val">1</span>, &amp;computeSrc, <span class="kw">nullptr</span>);
+    metagl::<span class="fn">glCompileShader</span>(cs);
+
+    <span class="ty">GLuint</span> prog = metagl::<span class="fn">glCreateProgram</span>();
+    metagl::<span class="fn">glAttachShader</span>(prog, cs);
+    metagl::<span class="fn">glLinkProgram</span>(prog);
+    metagl::<span class="fn">glUseProgram</span>(prog);
+
+    <span class="cm">// Bind SSBO to binding 0:</span>
+    metagl::<span class="fn">glBindBufferBase</span>(metagl::BufferTarget::ShaderStorage, <span class="val">0</span>, ssbo);
+
+    <span class="cm">// Dispatch: 64 threads per group, ceil(elementCount/64) groups</span>
+    <span class="ty">GLuint</span> groups = (elementCount + <span class="val">63</span>) / <span class="val">64</span>;
+    metagl::<span class="fn">glDispatchCompute</span>(groups, <span class="val">1</span>, <span class="val">1</span>);
+
+    <span class="cm">// Ensure writes are visible to subsequent reads:</span>
+    metagl::<span class="fn">glMemoryBarrier</span>(metagl::MemoryBarrierMask::ShaderStorage);
+}</pre>
+
+<!-- Blending -->
+<h2 id="blending">Alpha Blending Setup</h2>
+<pre><span class="cm">// Standard "over" blending for transparent objects:</span>
+metagl::<span class="fn">glEnable</span>(metagl::Capability::Blend);
+metagl::<span class="fn">glBlendFunc</span>(metagl::BlendFactor::SrcAlpha,
+                    metagl::BlendFactor::OneMinusSrcAlpha);
+metagl::<span class="fn">glBlendEquation</span>(metagl::BlendEquation::FuncAdd);
+
+<span class="cm">// Premultiplied alpha (for ASTC/HDR textures):</span>
+metagl::<span class="fn">glBlendFunc</span>(metagl::BlendFactor::One,
+                    metagl::BlendFactor::OneMinusSrcAlpha);</pre>
+
+<!-- Stencil -->
+<h2 id="stencil">Stencil Masking</h2>
+<pre><span class="cm">// Pass 1: write stencil mask</span>
+metagl::<span class="fn">glEnable</span>(metagl::Capability::StencilTest);
+metagl::<span class="fn">glStencilFunc</span>(metagl::CompareFunc::Always, <span class="val">1</span>, <span class="val">0xFF</span>);
+metagl::<span class="fn">glStencilOp</span>(metagl::StencilOp::Keep,
+                    metagl::StencilOp::Keep,
+                    metagl::StencilOp::Replace);
+metagl::<span class="fn">glColorMask</span>(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+drawMaskShape();
+
+<span class="cm">// Pass 2: render only where stencil == 1</span>
+metagl::<span class="fn">glColorMask</span>(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+metagl::<span class="fn">glStencilFunc</span>(metagl::CompareFunc::Equal, <span class="val">1</span>, <span class="val">0xFF</span>);
+metagl::<span class="fn">glStencilOp</span>(metagl::StencilOp::Keep,
+                    metagl::StencilOp::Keep,
+                    metagl::StencilOp::Keep);
+drawScene();</pre>
+
+<!-- Errors -->
+<h2 id="errors">Error Handling</h2>
+<pre><span class="cm">// Inline error check helper:</span>
+<span class="kw">inline void</span> <span class="fn">checkGLError</span>(<span class="kw">const char</span>* context) {
+    <span class="kw">auto</span> err = metagl::<span class="fn">glGetError</span>();
+    <span class="kw">if</span> (err != metagl::ErrorCode::NoError) {
+        fprintf(stderr, <span class="st">"GL error at %s: 0x%X\n"</span>,
+                context,
+                <span class="kw">static_cast</span>&lt;<span class="ty">unsigned</span>&gt;(err));
+    }
+}
+
+<span class="cm">// Usage:</span>
+metagl::<span class="fn">glLinkProgram</span>(prog);
+<span class="fn">checkGLError</span>(<span class="st">"glLinkProgram"</span>);
+
+<span class="cm">// Possible error codes:</span>
+<span class="cm">//  ErrorCode::NoError                    — no error</span>
+<span class="cm">//  ErrorCode::InvalidEnum                — bad enum value</span>
+<span class="cm">//  ErrorCode::InvalidValue               — bad parameter value</span>
+<span class="cm">//  ErrorCode::InvalidOperation           — invalid state</span>
+<span class="cm">//  ErrorCode::OutOfMemory                — allocation failed</span>
+<span class="cm">//  ErrorCode::InvalidFramebufferOperation — FBO not complete</span></pre>
+
+</main>
+</div>
+<footer>meta-gl — OpenEggbert project</footer>
+</body>
+</html>

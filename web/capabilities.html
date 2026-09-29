@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Capabilities API — meta-gl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="getting-started.html">Getting Started</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="enums.html">Enums</a>
+    <a href="functions.html">Functions</a>
+    <a href="types.html">Types</a>
+    <a href="context.html">Context</a>
+    <a href="context-events.html">Ctx Events</a>
+    <a href="capabilities.html" class="active">Capabilities</a>
+    <a href="debug.html">Debug</a>
+    <a href="examples.html">Examples</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Sections</h3>
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#struct">Capabilities Struct</a></li>
+    <li><a href="#api">Query Functions</a></li>
+    <li><a href="#extensions">Extension Queries</a></li>
+    <li><a href="#usage">Usage Patterns</a></li>
+    <li><a href="#versioning">Version Matrix</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+<h1>Capabilities API</h1>
+<p>Declared in <code>include/metagl/Capabilities.hpp</code>. After calling
+<code>metagl::Initialize()</code>, the Capabilities API lets you query which
+OpenGL ES and WebGL feature sets the current context supports.</p>
+
+<h2 id="overview">Overview</h2>
+<p>
+  meta-gl reads <code>GL_VERSION</code>, <code>GL_VENDOR</code>, <code>GL_RENDERER</code>,
+  <code>GL_SHADING_LANGUAGE_VERSION</code>, and enumerates <code>GL_EXTENSIONS</code>
+  during initialization. The results are cached in a <code>Capabilities</code> struct.
+  You can read this struct at any time without making additional GL calls.
+</p>
+
+<h2 id="struct">Capabilities Struct</h2>
+<pre><span class="kw">struct</span> <span class="ty">Capabilities</span> {
+    std::string version_string;
+    std::string vendor;
+    std::string renderer;
+    std::string shading_language_version;
+    std::vector&lt;std::string&gt; extensions;
+
+    <span class="ty">bool</span> gles20 = <span class="kw">false</span>;  <span class="cm">// true for ES 2.0 or higher</span>
+    <span class="ty">bool</span> gles30 = <span class="kw">false</span>;  <span class="cm">// true for ES 3.0 or higher</span>
+    <span class="ty">bool</span> gles31 = <span class="kw">false</span>;  <span class="cm">// true for ES 3.1 or higher</span>
+    <span class="ty">bool</span> gles32 = <span class="kw">false</span>;  <span class="cm">// true for ES 3.2 or higher</span>
+
+    <span class="cm">// Only meaningful when compiled with Emscripten:</span>
+    <span class="ty">bool</span> webgl1 = <span class="kw">false</span>;
+    <span class="ty">bool</span> webgl2 = <span class="kw">false</span>;
+};</pre>
+
+<div class="callout">
+  <p><strong>Note:</strong> Version flags are cumulative. If <code>gles32 == true</code>, then
+  <code>gles31</code>, <code>gles30</code>, and <code>gles20</code> are all also <code>true</code>.</p>
+</div>
+
+<h2 id="api">Query Functions</h2>
+<table>
+  <tr><th>Function</th><th>Returns</th><th>Description</th></tr>
+  <tr>
+    <td><code>GetCapabilities()</code></td>
+    <td><code>const Capabilities&amp;</code></td>
+    <td>Full capabilities struct, valid after Initialize()</td>
+  </tr>
+  <tr>
+    <td><code>SupportsGLES20()</code></td>
+    <td><code>bool</code></td>
+    <td>True if context is ES 2.0+</td>
+  </tr>
+  <tr>
+    <td><code>SupportsGLES30()</code></td>
+    <td><code>bool</code></td>
+    <td>True if context is ES 3.0+</td>
+  </tr>
+  <tr>
+    <td><code>SupportsGLES31()</code></td>
+    <td><code>bool</code></td>
+    <td>True if context is ES 3.1+</td>
+  </tr>
+  <tr>
+    <td><code>SupportsGLES32()</code></td>
+    <td><code>bool</code></td>
+    <td>True if context is ES 3.2+</td>
+  </tr>
+  <tr>
+    <td><code>SupportsWebGL2()</code></td>
+    <td><code>bool</code></td>
+    <td>True when on WebGL 2 (Emscripten only)</td>
+  </tr>
+  <tr>
+    <td><code>HasExtension(name)</code></td>
+    <td><code>bool</code></td>
+    <td>True if the named extension is present</td>
+  </tr>
+</table>
+<p>All functions are <code>[[nodiscard]]</code> and <code>noexcept</code>.</p>
+
+<h2 id="extensions">Extension Queries</h2>
+<pre><span class="cm">// Check for a specific extension:</span>
+<span class="kw">if</span> (metagl::<span class="fn">HasExtension</span>(<span class="st">"GL_EXT_texture_filter_anisotropic"</span>)) {
+    <span class="cm">// enable anisotropic filtering</span>
+}
+
+<span class="cm">// Iterate all extensions:</span>
+<span class="kw">const auto</span>&amp; caps = metagl::<span class="fn">GetCapabilities</span>();
+<span class="kw">for</span> (<span class="kw">const</span> <span class="ty">auto</span>&amp; ext : caps.extensions) {
+    std::cout &lt;&lt; ext &lt;&lt; <span class="st">"\n"</span>;
+}
+
+<span class="cm">// Print driver info:</span>
+std::cout &lt;&lt; <span class="st">"Vendor:   "</span> &lt;&lt; caps.vendor &lt;&lt; <span class="st">"\n"</span>;
+std::cout &lt;&lt; <span class="st">"Renderer: "</span> &lt;&lt; caps.renderer &lt;&lt; <span class="st">"\n"</span>;
+std::cout &lt;&lt; <span class="st">"Version:  "</span> &lt;&lt; caps.version_string &lt;&lt; <span class="st">"\n"</span>;</pre>
+
+<h2 id="usage">Usage Patterns</h2>
+
+<h3>Feature-gating at startup</h3>
+<pre>metagl::<span class="fn">Initialize</span>(loader);
+
+<span class="kw">const auto</span>&amp; caps = metagl::<span class="fn">GetCapabilities</span>();
+<span class="kw">bool</span> canCompute     = caps.gles31;
+<span class="kw">bool</span> canGeomShader  = caps.gles32;
+<span class="kw">bool</span> hasFloatTex    = caps.gles30 ||
+    metagl::<span class="fn">HasExtension</span>(<span class="st">"GL_OES_texture_float"</span>);</pre>
+
+<h3>Adaptive quality</h3>
+<pre><span class="kw">if</span> (metagl::<span class="fn">SupportsGLES30</span>()) {
+    useTexStorage();  <span class="cm">// immutable storage, ES3+</span>
+} <span class="kw">else</span> {
+    useTexImage();    <span class="cm">// mutable storage, ES2</span>
+}
+
+<span class="kw">if</span> (metagl::<span class="fn">HasExtension</span>(<span class="st">"GL_EXT_texture_compression_s3tc"</span>)) {
+    loadDXT1Textures();
+} <span class="kw">else if</span> (metagl::<span class="fn">SupportsGLES30</span>()) {
+    loadETC2Textures();  <span class="cm">// required in ES3</span>
+} <span class="kw">else</span> {
+    loadRGBATextures();  <span class="cm">// fallback</span>
+}</pre>
+
+<h2 id="versioning">OpenGL ES Version Matrix</h2>
+<table>
+  <tr><th>ES version</th><th>Key new features</th><th>Flag</th></tr>
+  <tr>
+    <td><strong>2.0</strong></td>
+    <td>Vertex + fragment shaders, VBOs, textures, framebuffers (basic)</td>
+    <td><code>gles20</code></td>
+  </tr>
+  <tr>
+    <td><strong>3.0</strong></td>
+    <td>VAOs, UBOs, transform feedback, MSAA FBOs, ETC2/EAC textures,
+        integer formats, 3D textures, instancing, sync objects, queries</td>
+    <td><code>gles30</code></td>
+  </tr>
+  <tr>
+    <td><strong>3.1</strong></td>
+    <td>Compute shaders, SSBOs, atomic counters, image load/store,
+        indirect draw/dispatch, separate shader programs, vertex binding API</td>
+    <td><code>gles31</code></td>
+  </tr>
+  <tr>
+    <td><strong>3.2</strong></td>
+    <td>Geometry shaders, tessellation, ASTC textures, robust context,
+        debug output, draw indirect with base vertex, layered FBOs</td>
+    <td><code>gles32</code></td>
+  </tr>
+</table>
+
+</main>
+</div>
+<footer>meta-gl — OpenEggbert project</footer>
+</body>
+</html>

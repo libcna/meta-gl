@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Changelog — meta-gl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="getting-started.html">Getting Started</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="enums.html">Enums</a>
+    <a href="functions.html">Functions</a>
+    <a href="types.html">Types</a>
+    <a href="context.html">Context</a>
+    <a href="context-events.html">Ctx Events</a>
+    <a href="capabilities.html">Capabilities</a>
+    <a href="debug.html">Debug</a>
+    <a href="examples.html">Examples</a>
+    <a href="changelog.html" class="active">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Releases</h3>
+  <ul>
+    <li><a href="#v0-2-0">v0.2.0 — 2026-06-27</a></li>
+    <li><a href="#v0-1-0">v0.1.0 — initial</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+<h1>Changelog</h1>
+<p>All notable changes to meta-gl are documented here. Format follows
+<a href="https://keepachangelog.com/en/1.0.0/" target="_blank">Keep a Changelog</a>.</p>
+
+<h2 id="v0-2-0">v0.2.0 — 2026-06-27</h2>
+<div class="card">
+<h3>Breaking changes</h3>
+<ul>
+  <li><code>ContextListener::on_context_lost()</code> renamed to <code>OnContextLost()</code>.</li>
+  <li><code>ContextListener::on_context_restored()</code> renamed to <code>OnContextRestored()</code>.</li>
+  <li><code>ContextInfo</code> no longer contains <code>vendor</code>, <code>renderer</code>, <code>gles20</code>–<code>gles32</code>, <code>webgl</code>/<code>webgl1</code>/<code>webgl2</code> fields.
+    Use <code>GetCapabilities()</code> for feature detection. <code>ContextInfo</code> now holds only <code>api</code>, <code>major</code>, <code>minor</code>, <code>generation</code>, <code>status</code>.</li>
+</ul>
+</div>
+<div class="card">
+<h3>Added</h3>
+<ul>
+  <li><strong>Typed handle types</strong> replacing raw <code>GLuint</code>/<code>GLint</code> parameters:
+    <code>ShaderId</code>, <code>ProgramId</code>, <code>TextureId</code>, <code>BufferId</code>,
+    <code>FramebufferId</code>, <code>RenderbufferId</code>, <code>SamplerId</code>, <code>VertexArrayId</code>,
+    <code>QueryId</code>, <code>TransformFeedbackId</code>, <code>ProgramPipelineId</code>,
+    <code>UniformLocation</code>, <code>AttribLocation</code>, <code>ImageUnit</code>.</li>
+  <li><code>EnumNames.hpp</code> — <code>to_string()</code> overloads for all 89 enum classes and handle types.</li>
+  <li><code>Debug.hpp</code> / <code>src/Debug.cpp</code> — optional GL call logging controlled by <code>METAGLDEBUG</code>.</li>
+  <li><code>Context.hpp</code> / <code>Capabilities.hpp</code> — context lifecycle state and feature-detection structs.</li>
+  <li><code>ContextEvents.hpp</code> — <code>ContextListener</code> interface with <code>AddContextListener</code> / <code>RemoveContextListener</code> / <code>NotifyContextLost</code> / <code>NotifyContextRestored</code>.</li>
+  <li><code>Emscripten.hpp</code> — <code>InstallEmscriptenContextLossCallbacks()</code> for WebGL context loss/restore.</li>
+  <li><code>SamplerParameter</code> enum for <code>glSamplerParameter*</code> / <code>glGetSamplerParameter*</code>.</li>
+  <li><code>SampleMaskValue</code> bitfield enum for <code>glSampleMaski</code>.</li>
+  <li><code>ColorAttachment</code> enum (Color0–Color31) with <code>to_framebuffer_attachment</code>, <code>to_draw_buffer</code>, <code>to_read_buffer</code> conversion helpers.</li>
+  <li><code>GlHandle</code> concept (requires <code>.value</code> of type <code>GLuint</code>).</li>
+  <li><code>GlEnum</code> concept (enum class with <code>GLenum</code> underlying type).</li>
+  <li><code>GlBitfield</code> concept with generic <code>operator|</code>, <code>operator&amp;</code>, <code>operator~</code> for all bitfield enums.</li>
+  <li><code>SpanCompatible</code> concept constraining <code>std::span&lt;const T&gt;</code> buffer upload templates.</li>
+  <li><code>std::span</code> overloads for all <code>glGen*</code> / <code>glDelete*</code> function families.</li>
+  <li><code>std::span&lt;const T&gt;</code> template overloads for <code>glBufferData</code> and <code>glBufferSubData</code>.</li>
+  <li><code>std::string_view</code> convenience overload for <code>glShaderSource</code> (single source string).</li>
+  <li>Template dispatch helpers: <code>glGetUniform&lt;T&gt;</code>, <code>glGetnUniform&lt;T&gt;</code>, <code>glTexParameter&lt;T&gt;</code>, <code>glSamplerParameter&lt;T&gt;</code>, <code>glClearBuffer&lt;T&gt;</code>, <code>glGetVertexAttrib&lt;T&gt;</code>.</li>
+  <li><code>glIs*</code> functions now return <code>bool</code> instead of <code>GLboolean</code>.</li>
+  <li><code>AllFunctionsLoaded()</code> public API in <code>Loader.hpp</code>.</li>
+  <li><code>IsFunctionAvailable(std::string_view)</code> public API in <code>Loader.hpp</code>.</li>
+  <li><code>Debug.hpp</code> and <code>EnumNames.hpp</code> included by umbrella <code>metagl.hpp</code> (opt-out via <code>METAGL_NO_DEBUG</code> / <code>METAGL_NO_ENUM_NAMES</code>).</li>
+  <li><code>Emscripten.hpp</code> included by umbrella <code>metagl.hpp</code> when <code>__EMSCRIPTEN__</code> is defined.</li>
+</ul>
+</div>
+<div class="card">
+<h3>Changed</h3>
+<ul>
+  <li>C++ baseline raised from C++20 to <strong>C++23</strong>.</li>
+  <li>CMake: <code>target_compile_features(PUBLIC cxx_std_23)</code> propagates standard to consumers.</li>
+  <li>CMake: added <code>-Wall -Wextra -Wpedantic</code> (GCC/Clang) and <code>/W4</code> (MSVC) warning flags.</li>
+  <li>CMake: <code>find_package(meta-gl CONFIG)</code> support via <code>CMakePackageConfigHelpers</code>.</li>
+  <li>CMake: <code>BUILD_TESTING</code> option (default <code>OFF</code>) with <code>enable_testing()</code> guard.</li>
+  <li>CMake: <code>BUILD_SHARED_LIBS</code> option (default <code>OFF</code>).</li>
+  <li>CMake: <code>SANITIZE</code> option enabling ASan + UBSan for GCC/Clang.</li>
+  <li><code>g_function_availability</code> map is now cleared at the start of each <code>Initialize()</code> call.</li>
+  <li><code>BlendMode</code> enum removed (duplicated <code>BlendEquation</code>).</li>
+  <li><code>TextureFilter</code> renamed to <code>BlitFilter</code> (used only by <code>glBlitFramebuffer</code>).</li>
+  <li><code>TextureWrap</code> removed (duplicate of <code>TextureWrapMode</code>).</li>
+  <li><code>ContextInfo</code> gles/webgl flags and string fields moved to <code>Capabilities</code>.</li>
+</ul>
+</div>
+<div class="card">
+<h3>Fixed</h3>
+<ul>
+  <li>README.md examples corrected from <code>metagl::GlClear</code> etc. to <code>metagl::glClear</code> (lowercase).</li>
+</ul>
+</div>
+
+<h2 id="v0-1-0">v0.1.0 — initial</h2>
+<div class="card">
+<h3>Added</h3>
+<ul>
+  <li>Initial extraction from easy-gl as a standalone low-level GL layer.</li>
+  <li><code>metagl::Initialize(GlGetProcAddressFn)</code> / <code>metagl::IsInitialized()</code> loader API.</li>
+  <li>Type-safe <code>enum class</code> wrappers: <code>BufferTarget</code>, <code>BufferUsage</code>, <code>ShaderType</code>, <code>TextureTarget</code>,
+    <code>TextureParameter</code>, <code>PixelFormat</code>, <code>PixelType</code>, <code>PrimitiveType</code>, <code>DataType</code>, <code>Capability</code>,
+    <code>CompareFunc</code>, <code>CullFace</code>, <code>FrontFace</code>, <code>BlendFactor</code>, <code>StringName</code>, <code>ClearBufferBit</code>.</li>
+  <li>Bitwise <code>operator|</code> for <code>ClearBufferBit</code> mask composition.</li>
+  <li>Full set of <code>metagl::gl*</code> wrapper functions covering buffers, shaders, programs, textures,
+    vertex arrays, draw calls, and render state.</li>
+  <li>CMake target <code>meta-gl</code> with alias <code>meta-gl::meta-gl</code>, C++20 standard, static library.</li>
+</ul>
+</div>
+
+<h2>Design Decisions Log</h2>
+<p>This section documents key architectural decisions made during the project.</p>
+
+<div class="card">
+  <h3>2026-06 — METAGLDEBUG disabled by default</h3>
+  <p>The debug logging macro is <strong>off</strong> by default (<code>#define METAGLDEBUG</code> is
+  commented out in Debug.hpp). It must be explicitly enabled by the user or via a compiler flag.
+  This ensures that debug builds without intentional logging are not penalized in performance.</p>
+</div>
+
+<div class="card">
+  <h3>2026-06 — EnumNames.hpp generated separately</h3>
+  <p><code>EnumNames.hpp</code> is a generated file containing <code>to_string()</code> overloads
+  for all 89 enum classes. It is included only from <code>Debug.hpp</code> (when METAGLDEBUG
+  is active), not from the main headers. This keeps compile times low for non-debug builds.</p>
+</div>
+
+<div class="card">
+  <h3>2026-06 — No C++ modules</h3>
+  <p>The project deliberately avoids C++ modules to maintain compatibility with a wider range
+  of compilers and build systems, including older GCC and Clang versions commonly found on
+  embedded Linux and Android NDK toolchains.</p>
+</div>
+
+<div class="card">
+  <h3>2026-06 — No RAII in meta-gl</h3>
+  <p>meta-gl is a thin wrapper layer. RAII resource management belongs in easy-gl.
+  Mixing RAII into meta-gl would blur the layer boundary and make it impossible for
+  easy-gl to implement its own ownership model without conflicts.</p>
+</div>
+
+</main>
+</div>
+<footer>meta-gl — OpenEggbert project</footer>
+</body>
+</html>

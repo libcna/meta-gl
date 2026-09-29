@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Debug Logging — meta-gl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="getting-started.html">Getting Started</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="enums.html">Enums</a>
+    <a href="functions.html">Functions</a>
+    <a href="types.html">Types</a>
+    <a href="context.html">Context</a>
+    <a href="context-events.html">Ctx Events</a>
+    <a href="capabilities.html">Capabilities</a>
+    <a href="debug.html" class="active">Debug</a>
+    <a href="examples.html">Examples</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Sections</h3>
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#enabling">Enabling</a></li>
+    <li><a href="#output">Sample Output</a></li>
+    <li><a href="#internals">How It Works</a></li>
+    <li><a href="#cost">Zero-Cost When Disabled</a></li>
+    <li><a href="#enumnames">EnumNames Integration</a></li>
+    <li><a href="#callrecord">CallRecord Format</a></li>
+    <li><a href="#gldebug">GL Debug Callbacks (ES 3.2)</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+<h1>Debug Logging</h1>
+<p>
+  Declared in <code>include/metagl/Debug.hpp</code>. meta-gl has two separate debug
+  mechanisms: the compile-time <code>METAGLDEBUG</code> per-call logger and the
+  runtime OpenGL ES 3.2 debug callback API.
+</p>
+
+<h2 id="overview">Overview</h2>
+<p>
+  The METAGLDEBUG logger records every GL call with its function name, typed argument
+  values (using generated enum names), and the return value. Records accumulate in a
+  ring buffer and are flushed to <code>stderr</code> every 5 seconds.
+</p>
+<p>
+  When <code>METAGLDEBUG</code> is not defined, all logging macros expand to
+  <code>do {} while(0)</code> — the optimizer removes them entirely.
+</p>
+
+<h2 id="enabling">Enabling METAGLDEBUG</h2>
+<p>Two ways to enable the logger:</p>
+
+<h3>Option A — Uncomment in Debug.hpp</h3>
+<pre><span class="cm">// In include/metagl/Debug.hpp, change:</span>
+<span class="cm">// #define METAGLDEBUG</span>
+<span class="cm">// to:</span>
+<span class="kw">#define</span> <span class="nm">METAGLDEBUG</span></pre>
+
+<h3>Option B — CMake compiler flag</h3>
+<pre>cmake -S . -B build -DCMAKE_CXX_FLAGS="-DMETAGLDEBUG"
+cmake --build build</pre>
+
+<div class="callout warn">
+  <p><strong>Warning:</strong> METAGLDEBUG has significant runtime overhead — every GL call
+  performs string formatting and buffer management. Use only in debug builds.
+  Never ship with METAGLDEBUG enabled.</p>
+</div>
+
+<h2 id="output">Sample Output</h2>
+<p>With METAGLDEBUG enabled, you will see output like this on <code>stderr</code>:</p>
+<pre><span class="cm">[metagl debug flush — 5 calls]</span>
+  #1  2026-06-13T10:00:01.123  glEnable(Blend)  → void
+  #2  2026-06-13T10:00:01.124  glBlendFunc(SrcAlpha, OneMinusSrcAlpha)  → void
+  #3  2026-06-13T10:00:01.125  glBindBuffer(Array, 3)  → void
+  #4  2026-06-13T10:00:01.126  glBufferData(Array, 72, 0x7ffd12345678, StaticDraw)  → void
+  #5  2026-06-13T10:00:01.127  glCreateShader(Vertex)  → 1</pre>
+<p>
+  Note that enum values are printed as their <strong>named enumerator</strong>
+  (e.g., <code>SrcAlpha</code>, <code>Array</code>, <code>StaticDraw</code>),
+  not as raw integers. This makes the log human-readable without a GL header lookup.
+</p>
+
+<h2 id="internals">How It Works</h2>
+<p>
+  The debug system has three layers:
+</p>
+<ol>
+  <li><strong>Value formatter</strong> — <code>metagl::debug::to_str(T)</code>:
+    a template that formats any value. For enum classes it calls <code>metagl::to_string()</code>
+    if available (from EnumNames.hpp), otherwise falls back to the raw integer. Pointers
+    print as hex. Null pointers print as <code>"null"</code>.</li>
+  <li><strong>Argument formatter</strong> — <code>metagl::debug::fmt_args(args...)</code>:
+    a fold-expression that joins all arguments with <code>", "</code>.</li>
+  <li><strong>Recorder</strong> — <code>metagl::debug::record(func, retval, params)</code>:
+    stores a <code>CallRecord</code> into a ring buffer. Flushes to stderr when 5 seconds
+    have passed since the last flush or the buffer is full.</li>
+</ol>
+
+<pre><span class="cm">// Simplified internal layout of Debug.hpp:</span>
+
+<span class="kw">namespace</span> metagl::debug {
+
+<span class="kw">template</span>&lt;<span class="ty">typename</span> T&gt;
+std::string <span class="fn">to_str</span>(T val) {
+    <span class="kw">if constexpr</span> (std::is_enum_v&lt;T&gt;) {
+        <span class="kw">if constexpr</span> (<span class="kw">requires</span> { metagl::<span class="fn">to_string</span>(val); }) {
+            <span class="kw">auto</span> sv = metagl::<span class="fn">to_string</span>(val);
+            <span class="kw">if</span> (sv != <span class="st">"?"</span>) <span class="kw">return</span> std::string(sv);
+        }
+        <span class="kw">return</span> std::<span class="fn">to_string</span>(static_cast&lt;std::underlying_type_t&lt;T&gt;&gt;(val));
+    } <span class="kw">else if constexpr</span> (std::is_pointer_v&lt;T&gt;) {
+        <span class="kw">if</span> (!val) <span class="kw">return</span> <span class="st">"null"</span>;
+        <span class="cm">// ... hex format</span>
+    } <span class="kw">else</span> {
+        <span class="kw">return</span> std::<span class="fn">to_string</span>(val);
+    }
+}
+
+<span class="kw">template</span>&lt;<span class="ty">typename</span>... Args&gt;
+std::string <span class="fn">fmt_args</span>(Args&amp;&amp;... args) {
+    <span class="cm">// fold expression joining all args with ", "</span>
+}
+
+<span class="kw">void</span> <span class="fn">record</span>(std::string_view func, std::string_view retval, std::string params);
+
+} <span class="cm">// namespace metagl::debug</span>
+
+<span class="cm">// Macros used in Functions.cpp:</span>
+<span class="kw">#define</span> <span class="nm">METAGL_DEBUG_LOG_VOID</span>(name, ...) \
+    metagl::debug::<span class="fn">record_void</span>(name <span class="nm">__VA_OPT__</span>(,) __VA_ARGS__)
+<span class="kw">#define</span> <span class="nm">METAGL_DEBUG_LOG</span>(name, _r, ...) \
+    metagl::debug::<span class="fn">record_ret</span>(name, _r <span class="nm">__VA_OPT__</span>(,) __VA_ARGS__)</pre>
+
+<h2 id="cost">Zero-Cost When Disabled</h2>
+<p>When <code>METAGLDEBUG</code> is not defined:</p>
+<pre><span class="kw">#else</span> <span class="cm">// METAGLDEBUG not defined</span>
+
+<span class="kw">#define</span> <span class="nm">METAGL_DEBUG_LOG_VOID</span>(name, ...) <span class="kw">do</span> {} <span class="kw">while</span>(<span class="val">0</span>)
+<span class="kw">#define</span> <span class="nm">METAGL_DEBUG_LOG</span>(name, _r, ...)  <span class="kw">do</span> {} <span class="kw">while</span>(<span class="val">0</span>)
+
+<span class="kw">#endif</span></pre>
+<p>
+  The macros become empty statements. At <code>-O2</code> or higher, the compiler
+  eliminates them completely. No string allocation, no function call, no cycle cost.
+</p>
+
+<h2 id="enumnames">EnumNames Integration</h2>
+<p>
+  The <code>to_str()</code> function uses a <code>requires</code> expression to
+  detect whether <code>metagl::to_string()</code> is available for a given type:
+</p>
+<pre><span class="kw">if constexpr</span> (<span class="kw">requires</span> { metagl::<span class="fn">to_string</span>(val); }) {
+    <span class="cm">// to_string() available — use the human-readable name</span>
+}</pre>
+<p>
+  This means that even if you add a new enum class to Enums.hpp but forget to add
+  it to EnumNames.hpp, the debug logger will still work — it just prints the raw
+  integer value instead of the name.
+</p>
+
+<h2 id="callrecord">CallRecord Format</h2>
+<p>Each logged call has:</p>
+<ul>
+  <li>Sequential call number since last flush</li>
+  <li>ISO timestamp (millisecond precision)</li>
+  <li>Function name</li>
+  <li>Formatted arguments (enum names or hex/decimal values)</li>
+  <li>Return value (<code>void</code> for void functions)</li>
+</ul>
+
+<h2 id="gldebug">GL Debug Callbacks (ES 3.2)</h2>
+<p>
+  meta-gl also exposes the OpenGL ES 3.2 debug callback API through
+  <code>metagl::glDebugMessageCallback()</code>. This is separate from METAGLDEBUG
+  and works at the driver level — the driver calls your callback when it detects
+  an error or performance warning.
+</p>
+<pre><span class="cm">// Requires ES 3.2 or the GL_KHR_debug extension.</span>
+
+metagl::<span class="fn">glEnable</span>(metagl::Capability::DebugOutput);
+metagl::<span class="fn">glEnable</span>(metagl::Capability::DebugOutputSynchronous);
+
+metagl::<span class="fn">glDebugMessageCallback</span>(
+    [](GLenum source, GLenum type, GLuint id, GLenum severity,
+       GLsizei length, <span class="kw">const</span> GLchar* message, <span class="kw">const</span> <span class="kw">void</span>* userParam)
+    {
+        std::cerr &lt;&lt; <span class="st">"GL:"</span> &lt;&lt; message &lt;&lt; <span class="st">"\n"</span>;
+    },
+    <span class="kw">nullptr</span>
+);
+
+<span class="cm">// Filter by severity:</span>
+metagl::<span class="fn">glDebugMessageControl</span>(
+    metagl::DebugSource::DontCare,
+    metagl::DebugType::DontCare,
+    metagl::DebugSeverity::Notification,  <span class="cm">// suppress notifications</span>
+    <span class="val">0</span>, <span class="kw">nullptr</span>, GL_FALSE
+);</pre>
+<div class="callout ok">
+  <p><strong>Tip:</strong> Combining <code>DebugOutputSynchronous</code> with the driver callback
+  gives you a stack trace in the debugger at the exact call that triggered the error.
+  Without Synchronous, the callback may fire at any time.</p>
+</div>
+
+</main>
+</div>
+<footer>meta-gl — OpenEggbert project</footer>
+</body>
+</html>

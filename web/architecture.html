@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Architecture — meta-gl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="getting-started.html">Getting Started</a>
+    <a href="architecture.html" class="active">Architecture</a>
+    <a href="enums.html">Enums</a>
+    <a href="functions.html">Functions</a>
+    <a href="types.html">Types</a>
+    <a href="context.html">Context</a>
+    <a href="context-events.html">Ctx Events</a>
+    <a href="capabilities.html">Capabilities</a>
+    <a href="debug.html">Debug</a>
+    <a href="examples.html">Examples</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Sections</h3>
+  <ul>
+    <li><a href="#design-goals">Design Goals</a></li>
+    <li><a href="#stack">Stack Overview</a></li>
+    <li><a href="#namespace">Namespace Layout</a></li>
+    <li><a href="#enums-design">Enum Strategy</a></li>
+    <li><a href="#handles">Handle Types</a></li>
+    <li><a href="#function-loading">Function Loading</a></li>
+    <li><a href="#cpp23">C++23 Features Used</a></li>
+    <li><a href="#what-not">What meta-gl Is Not</a></li>
+    <li><a href="#rules">Refactoring Rules</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+<h1>Architecture</h1>
+<p>meta-gl is designed around a single principle: <em>replace unsafe OpenGL integer parameters with
+strongly-typed C++ types, with zero extra cost</em>.</p>
+
+<h2 id="design-goals">Design Goals</h2>
+<ul>
+  <li><strong>Thin:</strong> every meta-gl function maps 1-to-1 to one GL call. No batching, no caching.</li>
+  <li><strong>Type-safe:</strong> separate <code>enum class</code> for every OpenGL parameter domain.</li>
+  <li><strong>Zero-overhead:</strong> enum conversions are <code>static_cast</code>, functions are inlined by the compiler.</li>
+  <li><strong>Procedural:</strong> no OOP resource classes. Ownership belongs to easy-gl, not meta-gl.</li>
+  <li><strong>Predictable:</strong> names closely mirror the original GL names for easy lookup.</li>
+</ul>
+
+<h2 id="stack">Stack Overview</h2>
+<pre>┌─────────────────────────────────────────┐
+│         Host Application                │
+│  (creates window + GL context)          │
+└──────────────────┬──────────────────────┘
+                   │ GetProcAddress
+┌──────────────────▼──────────────────────┐
+│           easy-gl  (easygl::)           │
+│   OOP/RAII: Texture, Buffer, Program    │
+│   owns and manages GL object lifetimes  │
+└──────────────────┬──────────────────────┘
+                   │ calls metagl::gl*
+┌──────────────────▼──────────────────────┐
+│           meta-gl  (metagl::)           │
+│   ● enum class wrappers                 │
+│   ● function pointer table              │
+│   ● context / capability detection      │
+│   ● optional debug logging              │
+└──────────────────┬──────────────────────┘
+                   │ real GL calls
+┌──────────────────▼──────────────────────┐
+│     OpenGL ES driver / WebGL runtime    │
+└─────────────────────────────────────────┘</pre>
+
+<h2 id="namespace">Namespace Layout</h2>
+<table>
+  <tr><th>Symbol</th><th>Location</th><th>Purpose</th></tr>
+  <tr><td><code>metagl::gl*</code></td><td><code>Functions.hpp</code></td><td>Wrapper functions, one per GL call</td></tr>
+  <tr><td><code>metagl::BufferTarget</code>, etc.</td><td><code>Enums.hpp</code></td><td>Type-safe GL enum domains</td></tr>
+  <tr><td><code>metagl::GLuint</code>, etc.</td><td><code>Types.hpp</code></td><td>Re-exported GL primitive types</td></tr>
+  <tr><td><code>metagl::Initialize()</code></td><td><code>Loader.hpp</code></td><td>Function pointer table init</td></tr>
+  <tr><td><code>metagl::GetContextInfo()</code></td><td><code>Context.hpp</code></td><td>Context status and version</td></tr>
+  <tr><td><code>metagl::GetCapabilities()</code></td><td><code>Capabilities.hpp</code></td><td>Runtime ES/WebGL capabilities</td></tr>
+  <tr><td><code>metagl::debug::*</code></td><td><code>Debug.hpp</code></td><td>Call logging (opt-in compile flag)</td></tr>
+  <tr><td><code>metagl::to_string()</code></td><td><code>EnumNames.hpp</code></td><td>Human-readable enum names for logging</td></tr>
+</table>
+
+<h2 id="enums-design">Enum Strategy</h2>
+<p>
+  Each OpenGL parameter domain maps to its own <code>enum class</code> backed by <code>GLenum</code>.
+  This means the compiler refuses to accept a <code>BufferTarget</code> where a <code>TextureTarget</code>
+  is expected, and vice versa — even though both are <code>uint32_t</code> at runtime.
+</p>
+<pre><span class="cm">// Raw OpenGL — both compile, second is a bug:</span>
+glBindBuffer(GL_ARRAY_BUFFER, vbo);          <span class="cm">// correct</span>
+glBindBuffer(GL_TEXTURE_2D, vbo);            <span class="cm">// silent bug!</span>
+
+<span class="cm">// meta-gl — second is a compile error:</span>
+metagl::<span class="fn">glBindBuffer</span>(metagl::BufferTarget::Array, vbo);        <span class="cm">// correct</span>
+metagl::<span class="fn">glBindBuffer</span>(metagl::TextureTarget::Texture2D, vbo);   <span class="cm">// ERROR</span></pre>
+
+<p>For bitfield parameters (like <code>glClear</code>), meta-gl defines <code>operator|</code> on the enum class:</p>
+<pre>metagl::<span class="fn">glClear</span>(metagl::ClearBufferBit::Color | metagl::ClearBufferBit::Depth);
+<span class="cm">//              ↑ returns ClearBufferBit, not a raw integer</span></pre>
+
+<h2 id="handles">Lightweight Handle Types</h2>
+<p>
+  Raw <code>GLuint</code> is used for everything in OpenGL — textures, buffers, shaders, programs.
+  meta-gl wraps them in minimal named structs so they cannot be accidentally swapped:
+</p>
+<pre><span class="kw">struct</span> <span class="ty">TextureId</span> { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">BufferId</span>  { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">ProgramId</span> { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">ShaderId</span>  { <span class="ty">GLuint</span> value{}; };</pre>
+<div class="callout">
+  <p>These structs own <strong>nothing</strong>. They are plain data. RAII lifetimes belong in easy-gl.</p>
+</div>
+
+<h2 id="function-loading">Function Pointer Loading</h2>
+<p>
+  meta-gl does not link directly against any GL library. Instead, it stores a table of
+  <code>void*</code> function pointers loaded at runtime via the host-provided
+  <code>GetProcAddress</code> callback. This allows the same binary to run on OpenGL ES 2.0
+  through 3.2 and WebGL, gracefully skipping unavailable functions.
+</p>
+<pre><span class="cm">// Internal (simplified) — actual table is in Functions.cpp:</span>
+<span class="kw">static</span> PFNGLBINDBUFFERPROC       _glBindBuffer       = <span class="kw">nullptr</span>;
+<span class="kw">static</span> PFNGLCREATESHADERPPROC    _glCreateShader     = <span class="kw">nullptr</span>;
+<span class="cm">// ... 358 pointers total</span>
+
+<span class="ty">bool</span> metagl::<span class="fn">Initialize</span>(<span class="ty">GlGetProcAddressFn</span> loader) {
+    _glBindBuffer    = (<span class="ty">PFNGLBINDBUFFERPROC</span>)   loader(<span class="st">"glBindBuffer"</span>);
+    _glCreateShader  = (<span class="ty">PFNGLCREATESHADERPPROC</span>) loader(<span class="st">"glCreateShader"</span>);
+    <span class="cm">// ...</span>
+    <span class="kw">return</span> _glBindBuffer != <span class="kw">nullptr</span>; <span class="cm">// core set check</span>
+}</pre>
+
+<h2 id="cpp23">C++23 Features Used</h2>
+<table>
+  <tr><th>Feature</th><th>Where used</th><th>Purpose</th></tr>
+  <tr><td><code>enum class</code></td><td>Enums.hpp</td><td>Type-safe GL parameter categories</td></tr>
+  <tr><td><code>std::span</code></td><td>Functions.hpp, examples</td><td>Buffer data views without raw pointer+size</td></tr>
+  <tr><td><code>constexpr if</code></td><td>Debug.hpp</td><td>Zero-cost branch on template type</td></tr>
+  <tr><td>Concepts (<code>requires</code>)</td><td>Debug.hpp</td><td>Optional <code>to_string()</code> detection</td></tr>
+  <tr><td>Fold expressions</td><td>Debug.hpp <code>fmt_args</code></td><td>Variadic argument formatting</td></tr>
+  <tr><td><code>[[nodiscard]]</code></td><td>Context.hpp, Capabilities.hpp, Loader.hpp</td><td>Prevent ignoring important return values</td></tr>
+  <tr><td><code>noexcept</code></td><td>Context.hpp</td><td>Context state queries are non-throwing</td></tr>
+  <tr><td><code>std::string_view</code></td><td>Loader.hpp, Debug.hpp</td><td>Non-owning string parameters</td></tr>
+</table>
+
+<div class="callout warn">
+  <p><strong>Not used:</strong> C++ modules, <code>std::expected</code>, <code>std::ranges</code> pipelines,
+  heavy SFINAE, <code>consteval</code>, C++26 features. The design deliberately avoids anything
+  that would hurt portability or compiler error readability.</p>
+</div>
+
+<h2 id="what-not">What meta-gl Is NOT</h2>
+<ul>
+  <li>Not a scene graph or renderer</li>
+  <li>Not an RAII resource manager (that is easy-gl's job)</li>
+  <li>Not a windowing library</li>
+  <li>Not a context creator</li>
+  <li>Not a shader compiler or SPIR-V pipeline</li>
+  <li>Not a math library</li>
+  <li>Not an error-reporting framework (only debug assertions and optional logging)</li>
+</ul>
+
+<h2 id="rules">Refactoring Rules</h2>
+<p>When contributing to meta-gl, follow these constraints:</p>
+<ol>
+  <li>Read <code>CLAUDE.md</code> before making changes.</li>
+  <li>Keep patches small and reviewable — one concept or enum group at a time.</li>
+  <li>Do not redesign the whole project in one patch.</li>
+  <li>Do not introduce RAII or OOP resource ownership into meta-gl.</li>
+  <li>Do not add modules or experimental C++26 features.</li>
+  <li>Build after every non-trivial change.</li>
+  <li>Show the diff before continuing with more refactoring.</li>
+</ol>
+
+</main>
+</div>
+<footer>meta-gl — OpenEggbert project</footer>
+</body>
+</html>

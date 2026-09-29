@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Types Reference — meta-gl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="getting-started.html">Getting Started</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="enums.html">Enums</a>
+    <a href="functions.html">Functions</a>
+    <a href="types.html" class="active">Types</a>
+    <a href="context.html">Context</a>
+    <a href="context-events.html">Ctx Events</a>
+    <a href="capabilities.html">Capabilities</a>
+    <a href="debug.html">Debug</a>
+    <a href="examples.html">Examples</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Sections</h3>
+  <ul>
+    <li><a href="#primitive">GL Primitive Types</a></li>
+    <li><a href="#procaddr">GetProcAddress</a></li>
+    <li><a href="#handles">Handle Structs</a></li>
+    <li><a href="#why-handles">Why Handle Structs?</a></li>
+    <li><a href="#enumnames">EnumNames</a></li>
+    <li><a href="#concepts">C++23 Concepts</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+<h1>Types Reference</h1>
+<p>
+  Types are declared in <code>include/metagl/Types.hpp</code>.
+  meta-gl re-exports the standard OpenGL ES primitive types from
+  <code>GLES3/gl32.h</code> into the <code>metagl</code> namespace so
+  calling code does not need to include any GL headers directly.
+</p>
+
+<h2 id="primitive">GL Primitive Types</h2>
+<p>These are simple <code>using</code> declarations that bring the GL types into <code>metagl::</code>.</p>
+<table>
+  <tr><th>metagl type</th><th>Underlying type</th><th>Typical use</th></tr>
+  <tr><td><code>GLbitfield</code></td><td><code>unsigned int</code></td><td>Bitfield parameters (e.g. <code>glClear</code>)</td></tr>
+  <tr><td><code>GLboolean</code></td><td><code>unsigned char</code></td><td>Boolean return values</td></tr>
+  <tr><td><code>GLbyte</code></td><td><code>signed char</code></td><td>8-bit signed vertex data</td></tr>
+  <tr><td><code>GLchar</code></td><td><code>char</code></td><td>Shader source / info log strings</td></tr>
+  <tr><td><code>GLclampf</code></td><td><code>float</code></td><td>Clamped [0,1] float parameters</td></tr>
+  <tr><td><code>GLenum</code></td><td><code>unsigned int</code></td><td>Base type for all GL enumerations</td></tr>
+  <tr><td><code>GLfixed</code></td><td><code>int</code> (16.16 fixed)</td><td>Legacy fixed-point values</td></tr>
+  <tr><td><code>GLfloat</code></td><td><code>float</code></td><td>Most numeric GL parameters</td></tr>
+  <tr><td><code>GLhalf</code></td><td><code>unsigned short</code></td><td>16-bit IEEE half-float</td></tr>
+  <tr><td><code>GLint</code></td><td><code>int</code></td><td>General integer parameters</td></tr>
+  <tr><td><code>GLint64</code></td><td><code>long long</code></td><td>64-bit state queries (ES3+)</td></tr>
+  <tr><td><code>GLintptr</code></td><td><code>ptrdiff_t</code></td><td>Buffer byte offsets</td></tr>
+  <tr><td><code>GLshort</code></td><td><code>short</code></td><td>16-bit signed vertex data</td></tr>
+  <tr><td><code>GLsizei</code></td><td><code>int</code></td><td>Non-negative sizes and counts</td></tr>
+  <tr><td><code>GLsizeiptr</code></td><td><code>ptrdiff_t</code></td><td>Buffer sizes in bytes</td></tr>
+  <tr><td><code>GLsync</code></td><td><code>struct __GLsync*</code></td><td>Fence sync handle</td></tr>
+  <tr><td><code>GLubyte</code></td><td><code>unsigned char</code></td><td>String returns, colour components</td></tr>
+  <tr><td><code>GLuint</code></td><td><code>unsigned int</code></td><td>Object names (textures, buffers, etc.)</td></tr>
+  <tr><td><code>GLuint64</code></td><td><code>unsigned long long</code></td><td>Timeout values, 64-bit queries</td></tr>
+  <tr><td><code>GLushort</code></td><td><code>unsigned short</code></td><td>16-bit unsigned index data</td></tr>
+  <tr><td><code>GLvoid</code></td><td><code>void</code></td><td>Alias for void</td></tr>
+  <tr><td><code>GLDEBUGPROC</code></td><td>function pointer</td><td>Debug message callback type</td></tr>
+</table>
+
+<h2 id="procaddr">GetProcAddress Type</h2>
+<pre><span class="cm">// In Types.hpp:</span>
+<span class="kw">using</span> <span class="ty">GlGetProcAddressFn</span> = <span class="kw">void</span>* (*)(<span class="kw">const</span> <span class="ty">char</span>* name);
+
+<span class="cm">// In Loader.hpp (alias for API ergonomics):</span>
+<span class="kw">using</span> <span class="ty">GetProcAddress</span> = <span class="ty">GlGetProcAddressFn</span>;</pre>
+<p>
+  This is the type that must be passed to <code>metagl::Initialize()</code>.
+  Any callable that returns a function pointer given a GL function name satisfies this type.
+</p>
+
+<h2 id="handles">Lightweight Handle Structs</h2>
+<p>
+  meta-gl defines thin wrapper structs around raw <code>GLuint</code> names to prevent
+  accidentally passing a texture handle where a buffer handle is expected.
+  These structs own <strong>nothing</strong> — they contain no destructor and no reference counting.
+</p>
+<pre><span class="kw">namespace</span> <span class="ty">metagl</span> {
+
+<span class="kw">struct</span> <span class="ty">TextureId</span>  { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">BufferId</span>   { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">ShaderId</span>   { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">ProgramId</span>  { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">FramebufferId</span> { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">RenderbufferId</span> { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">VertexArrayId</span> { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">SamplerId</span>  { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">QueryId</span>             { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">TransformFeedbackId</span>  { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">ProgramPipelineId</span>   { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">UniformLocation</span>     { <span class="ty">GLint</span>  value{-1}; };
+<span class="kw">struct</span> <span class="ty">AttribLocation</span>      { <span class="ty">GLuint</span> value{}; };
+<span class="kw">struct</span> <span class="ty">ImageUnit</span>           { <span class="ty">GLuint</span> value{}; };
+
+} <span class="cm">// namespace metagl</span></pre>
+
+<h3>Usage</h3>
+<pre><span class="cm">// Create a texture and wrap it in a typed handle:</span>
+<span class="ty">GLuint</span> raw;
+metagl::<span class="fn">glGenTextures</span>(<span class="val">1</span>, &amp;raw);
+metagl::<span class="ty">TextureId</span> tex{ raw };
+
+<span class="cm">// Now tex.value carries the GLuint. It is just data — no lifetime management:</span>
+metagl::<span class="fn">glBindTexture</span>(metagl::TextureTarget::Texture2D, tex.value);
+
+<span class="cm">// When you're done, delete explicitly (as in raw OpenGL):</span>
+metagl::<span class="fn">glDeleteTextures</span>(<span class="val">1</span>, &amp;tex.value);
+<span class="cm">// RAII deletion belongs in easy-gl, not here.</span></pre>
+
+<h2 id="why-handles">Why Handle Structs Instead of <code>GLuint</code>?</h2>
+<div class="grid2">
+  <div class="card">
+    <h3>Without handles</h3>
+    <pre style="margin:0"><span class="ty">GLuint</span> tex = <span class="val">0</span>, buf = <span class="val">0</span>;
+glGenTextures(<span class="val">1</span>, &amp;tex);
+glGenBuffers(<span class="val">1</span>, &amp;buf);
+<span class="cm">// Oops — compiles fine:</span>
+glBindTexture(GL_TEXTURE_2D, buf);</pre>
+  </div>
+  <div class="card">
+    <h3>With handles</h3>
+    <pre style="margin:0"><span class="ty">TextureId</span> tex;
+<span class="ty">BufferId</span>  buf;
+metagl::<span class="fn">glGenTextures</span>(<span class="val">1</span>, &amp;tex.value);
+metagl::<span class="fn">glGenBuffers</span>(<span class="val">1</span>, &amp;buf.value);
+<span class="cm">// type system helps catch swaps</span></pre>
+  </div>
+</div>
+
+<h2 id="enumnames">EnumNames.hpp</h2>
+<p>
+  <code>include/metagl/EnumNames.hpp</code> contains generated <code>to_string()</code>
+  overloads for every enumerator in every <code>enum class</code>.
+  The return type is <code>std::string_view</code>.
+  Unknown values return <code>"?"</code>.
+</p>
+<pre><span class="kw">#include</span> <span class="st">&lt;metagl/EnumNames.hpp&gt;</span>
+
+metagl::BufferTarget t = metagl::BufferTarget::Array;
+std::string_view name = metagl::<span class="fn">to_string</span>(t);
+<span class="cm">// name == "Array"</span>
+
+metagl::ShaderType st = metagl::ShaderType::Vertex;
+std::string_view sname = metagl::<span class="fn">to_string</span>(st);
+<span class="cm">// sname == "Vertex"</span></pre>
+<p>
+  This is used by the <a href="debug.html">debug logger</a> to print human-readable
+  argument names instead of raw integer values.
+</p>
+
+<h2 id="concepts">C++23 Concepts</h2>
+<p>
+  <code>Types.hpp</code> defines three C++23 concepts used throughout meta-gl to
+  constrain template parameters.
+</p>
+<table>
+  <tr><th>Concept</th><th>Requires</th><th>Purpose</th></tr>
+  <tr>
+    <td><code>GlHandle</code></td>
+    <td>Type has a <code>.value</code> convertible to <code>GLuint</code></td>
+    <td>Constrains functions that accept any typed handle struct</td>
+  </tr>
+  <tr>
+    <td><code>GlEnum</code></td>
+    <td><code>enum class</code> with <code>GLenum</code> underlying type</td>
+    <td>Constrains typed GL enum parameters</td>
+  </tr>
+  <tr>
+    <td><code>SpanCompatible</code></td>
+    <td>Trivially copyable + standard layout</td>
+    <td>Constrains <code>std::span&lt;const T&gt;</code> buffer upload templates</td>
+  </tr>
+</table>
+<pre><span class="cm">// GlHandle — write generic functions over any handle type:</span>
+<span class="kw">template</span>&lt;metagl::GlHandle H&gt;
+<span class="kw">void</span> <span class="fn">deleteObject</span>(H handle);
+
+<span class="cm">// SpanCompatible — upload any trivial data to a buffer:</span>
+<span class="kw">template</span>&lt;metagl::SpanCompatible T&gt;
+<span class="kw">void</span> <span class="fn">glBufferData</span>(<span class="ty">BufferTarget</span> target, std::span&lt;<span class="kw">const</span> T&gt; data, <span class="ty">BufferUsage</span> usage);</pre>
+
+</main>
+</div>
+<footer>meta-gl — OpenEggbert project</footer>
+</body>
+</html>

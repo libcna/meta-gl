@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Context Events — meta-gl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="getting-started.html">Getting Started</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="enums.html">Enums</a>
+    <a href="functions.html">Functions</a>
+    <a href="types.html">Types</a>
+    <a href="context.html">Context</a>
+    <a href="context-events.html" class="active">Ctx Events</a>
+    <a href="capabilities.html">Capabilities</a>
+    <a href="debug.html">Debug</a>
+    <a href="examples.html">Examples</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Sections</h3>
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#contextlistener">ContextListener</a></li>
+    <li><a href="#registration">Registration</a></li>
+    <li><a href="#dispatch">Event Dispatch</a></li>
+    <li><a href="#order">Call Order</a></li>
+    <li><a href="#example">Full Example</a></li>
+    <li><a href="#android">Android</a></li>
+    <li><a href="#webgl">WebGL / Emscripten</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+<h1>Context Events API</h1>
+<p>
+  Declared in <code>include/metagl/ContextEvents.hpp</code>. Added in v0.2.0.
+  The Context Events API provides an observer interface for GL context-lost and
+  context-restored lifecycle events.
+</p>
+
+<h2 id="overview">Overview</h2>
+<p>
+  On mobile (Android) and in browsers (WebGL / Emscripten), the GPU context can be
+  taken away at any time — the system kills it to free resources, or the browser tab
+  loses focus. When this happens all GL handles (textures, buffers, shaders, programs,
+  VAOs) become invalid. The context events system lets any object register a callback
+  so it can clean up and later re-upload its GPU resources.
+</p>
+<div class="callout">
+  <p>The context event system is separate from the raw <code>MarkContextLost()</code>
+  / <code>MarkContextRestored()</code> functions in <a href="context.html">Context.hpp</a>.
+  The event system dispatches to all registered listeners; the raw functions only update
+  the internal state flag.</p>
+</div>
+
+<h2 id="contextlistener">ContextListener Interface</h2>
+<pre><span class="kw">class</span> <span class="ty">ContextListener</span>
+{
+<span class="kw">public</span>:
+    <span class="kw">virtual</span> ~<span class="ty">ContextListener</span>() = <span class="kw">default</span>;
+
+    <span class="cm">// Called when the GL context has been lost.</span>
+    <span class="cm">// WARNING: Do NOT call any metagl::gl* function from this callback.</span>
+    <span class="kw">virtual void</span> <span class="fn">OnContextLost</span>() {}
+
+    <span class="cm">// Called after the GL context has been restored and function pointers reloaded.</span>
+    <span class="cm">// Safe to call metagl::gl* functions here to recreate GPU resources.</span>
+    <span class="kw">virtual void</span> <span class="fn">OnContextRestored</span>() {}
+};</pre>
+<div class="callout warn">
+  <p><strong>Warning:</strong> Inside <code>OnContextLost()</code> you must <em>not</em> call any
+  <code>metagl::gl*</code> function. The context is already gone; all function pointers may
+  be null or point to a dead context.</p>
+</div>
+
+<h2 id="registration">Registration</h2>
+<table>
+  <tr><th>Function</th><th>Description</th></tr>
+  <tr>
+    <td><code>AddContextListener(ContextListener*)</code></td>
+    <td>Register a listener. The caller retains ownership; pointer must stay valid until removed.</td>
+  </tr>
+  <tr>
+    <td><code>RemoveContextListener(ContextListener*)</code></td>
+    <td>Unregister. No-op if not found. Call before the listener is destroyed.</td>
+  </tr>
+</table>
+
+<h2 id="dispatch">Event Dispatch</h2>
+<table>
+  <tr><th>Function</th><th>Description</th></tr>
+  <tr>
+    <td><code>NotifyContextLost()</code></td>
+    <td>Dispatches <code>OnContextLost()</code> to all registered listeners, then calls <code>MarkContextLost()</code>.</td>
+  </tr>
+  <tr>
+    <td><code>NotifyContextRestored()</code></td>
+    <td>Dispatches <code>OnContextRestored()</code> to all registered listeners, then calls <code>MarkContextRestored()</code>.</td>
+  </tr>
+</table>
+
+<h2 id="order">Required Call Order on Context Restore</h2>
+<p>After a context-restore event, you <strong>must</strong> follow this order:</p>
+<ol>
+  <li>Call <code>metagl::LoadCurrentContext(getProcAddress)</code> — reloads all GL function pointers
+      and redetects capabilities. No <code>metagl::gl*</code> call is safe before this step.</li>
+  <li>Call <code>metagl::NotifyContextRestored()</code> — fires <code>OnContextRestored()</code>
+      on all registered listeners so they can recreate GPU resources.</li>
+</ol>
+<div class="callout warn">
+  <p><strong>Undefined behaviour:</strong> calling <code>NotifyContextRestored()</code> before
+  <code>LoadCurrentContext()</code> means listeners may invoke GL functions through stale
+  or null function pointers.</p>
+</div>
+
+<h2 id="example">Full Example</h2>
+<pre><span class="kw">#include</span> <span class="st">&lt;metagl/metagl.hpp&gt;</span>
+
+<span class="kw">class</span> <span class="ty">MyRenderer</span> : <span class="kw">public</span> metagl::<span class="ty">ContextListener</span>
+{
+<span class="kw">public</span>:
+    <span class="ty">bool</span> <span class="fn">init</span>() {
+        metagl::<span class="fn">AddContextListener</span>(<span class="kw">this</span>);
+        <span class="kw">return</span> <span class="fn">uploadResources</span>();
+    }
+
+    ~<span class="ty">MyRenderer</span>() {
+        metagl::<span class="fn">RemoveContextListener</span>(<span class="kw">this</span>);
+    }
+
+    <span class="kw">void</span> <span class="fn">OnContextLost</span>() <span class="kw">override</span> {
+        <span class="cm">// Don't call GL — just reset handles to 0</span>
+        texture_ = metagl::<span class="ty">TextureId</span>{};
+        vao_     = metagl::<span class="ty">VertexArrayId</span>{};
+        vbo_     = metagl::<span class="ty">BufferId</span>{};
+        program_ = metagl::<span class="ty">ProgramId</span>{};
+    }
+
+    <span class="kw">void</span> <span class="fn">OnContextRestored</span>() <span class="kw">override</span> {
+        <span class="cm">// GL pointers are valid again — recreate everything</span>
+        <span class="fn">uploadResources</span>();
+    }
+
+<span class="kw">private</span>:
+    <span class="ty">bool</span> <span class="fn">uploadResources</span>() {
+        metagl::<span class="fn">glGenTextures</span>(<span class="val">1</span>, &amp;texture_.value);
+        metagl::<span class="fn">glBindTexture</span>(metagl::TextureTarget::Texture2D, texture_);
+        <span class="cm">// ... upload pixel data ...</span>
+        <span class="kw">return</span> <span class="kw">true</span>;
+    }
+
+    metagl::<span class="ty">TextureId</span>     texture_;
+    metagl::<span class="ty">VertexArrayId</span> vao_;
+    metagl::<span class="ty">BufferId</span>      vbo_;
+    metagl::<span class="ty">ProgramId</span>     program_;
+};
+
+<span class="cm">// In main / application setup:</span>
+<span class="ty">MyRenderer</span> renderer;
+metagl::<span class="fn">Initialize</span>(SDL_GL_GetProcAddress);
+renderer.<span class="fn">init</span>();
+
+<span class="cm">// Platform context-loss path (e.g. Android onSurfaceDestroyed):</span>
+metagl::<span class="fn">NotifyContextLost</span>();
+
+<span class="cm">// Platform context-restore path (e.g. Android onSurfaceCreated):</span>
+metagl::<span class="fn">LoadCurrentContext</span>(SDL_GL_GetProcAddress); <span class="cm">// step 1</span>
+metagl::<span class="fn">NotifyContextRestored</span>();                   <span class="cm">// step 2</span></pre>
+
+<h2 id="android">Android</h2>
+<p>
+  On Android, context loss fires when the app goes to background (the EGL surface is destroyed).
+  Wire up the callbacks from your <code>GLSurfaceView.Renderer</code> JNI calls:
+</p>
+<pre><span class="cm">// onSurfaceDestroyed (context lost):</span>
+metagl::<span class="fn">NotifyContextLost</span>();
+
+<span class="cm">// onSurfaceCreated (context restored or first-time creation):</span>
+<span class="ty">bool</span> ok = metagl::<span class="fn">Initialize</span>(eglGetProcAddress);   <span class="cm">// first time</span>
+<span class="cm">// or:</span>
+metagl::<span class="fn">LoadCurrentContext</span>(eglGetProcAddress);         <span class="cm">// on restore</span>
+metagl::<span class="fn">NotifyContextRestored</span>();</pre>
+
+<h2 id="webgl">WebGL / Emscripten</h2>
+<p>
+  Use <code>metagl/Emscripten.hpp</code> to install browser event handlers automatically.
+  After that, call <code>NotifyContextLost</code> / <code>NotifyContextRestored</code>
+  from your own handler, or rely on the Emscripten callbacks to call
+  <code>MarkContextLost</code> / <code>MarkContextRestored</code> directly.
+</p>
+<pre><span class="kw">#include</span> <span class="st">&lt;metagl/metagl.hpp&gt;</span>  <span class="cm">// Emscripten.hpp included automatically</span>
+
+metagl::<span class="fn">Initialize</span>(emscripten_webgl_get_proc_address);
+metagl::<span class="fn">InstallEmscriptenContextLossCallbacks</span>(<span class="st">"#canvas"</span>);
+
+<span class="cm">// When context is restored, the browser fires webglcontextrestored.</span>
+<span class="cm">// Inside your handler:</span>
+metagl::<span class="fn">LoadCurrentContext</span>(emscripten_webgl_get_proc_address);
+metagl::<span class="fn">NotifyContextRestored</span>();</pre>
+
+</main>
+</div>
+<footer>meta-gl — OpenEggbert project</footer>
+</body>
+</html>

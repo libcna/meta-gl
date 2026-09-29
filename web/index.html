@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>meta-gl — Type-safe OpenGL ES Wrapper</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html" class="active">Home</a>
+    <a href="getting-started.html">Getting Started</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="enums.html">Enums</a>
+    <a href="functions.html">Functions</a>
+    <a href="types.html">Types</a>
+    <a href="context.html">Context</a>
+    <a href="context-events.html">Ctx Events</a>
+    <a href="capabilities.html">Capabilities</a>
+    <a href="debug.html">Debug</a>
+    <a href="examples.html">Examples</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Overview</h3>
+  <ul>
+    <li><a href="#what">What is meta-gl?</a></li>
+    <li><a href="#features">Key Features</a></li>
+    <li><a href="#layering">Layering</a></li>
+    <li><a href="#quickstart">Quick Start</a></li>
+    <li><a href="#headers">Public Headers</a></li>
+    <li><a href="#targets">Supported Targets</a></li>
+  </ul>
+  <h3>Pages</h3>
+  <ul>
+    <li><a href="getting-started.html">Getting Started</a></li>
+    <li><a href="architecture.html">Architecture</a></li>
+    <li><a href="enums.html">Enum Reference</a></li>
+    <li><a href="functions.html">Function Reference</a></li>
+    <li><a href="types.html">Types Reference</a></li>
+    <li><a href="context.html">Context API</a></li>
+    <li><a href="context-events.html">Context Events API</a></li>
+    <li><a href="capabilities.html">Capabilities API</a></li>
+    <li><a href="debug.html">Debug Logging</a></li>
+    <li><a href="examples.html">Examples</a></li>
+    <li><a href="changelog.html">Changelog</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+
+<div class="hero">
+  <h1>meta-gl</h1>
+  <p>A thin, type-safe C++23 wrapper over OpenGL ES 2.0 – 3.2 and WebGL.<br>
+     Replace raw <code>GLenum</code> parameters with strongly-typed <code>enum class</code> values, zero overhead.</p>
+  <p style="margin-top:1rem">
+    <span class="badge">C++23</span>
+    <span class="badge">OpenGL ES 2.0+</span>
+    <span class="badge">WebGL 1 / 2</span>
+    <span class="badge">Emscripten</span>
+    <span class="badge">Header-only enums</span>
+    <span class="badge">CMake</span>
+  </p>
+</div>
+
+<h2 id="what">What is meta-gl?</h2>
+<p>
+  <strong>meta-gl</strong> is a low-level, procedural C++ library that wraps the OpenGL ES API.
+  It does <em>not</em> own GPU resources, does not create windows, and does not manage contexts.
+  Its single purpose is to make raw OpenGL calls safer by replacing untyped <code>GLenum</code>
+  integer parameters with <code>enum class</code> types that are impossible to mix accidentally.
+</p>
+<p>
+  Every public function in the <code>metagl</code> namespace maps one-to-one to a raw
+  <code>gl*</code> call. There is no abstraction layer, no virtual dispatch, no heap allocation.
+  The compiler can inline everything; the binary output is identical to hand-written GL code.
+</p>
+
+<h2 id="features">Key Features</h2>
+<div class="grid2">
+  <div class="card">
+    <h3>89 enum classes</h3>
+    <p>Every OpenGL parameter domain has its own <code>enum class</code>:
+    <code>BufferTarget</code>, <code>ShaderType</code>, <code>TextureWrapMode</code>,
+    <code>BlendFactor</code>, and 85 more. Mixing them is a compile error.</p>
+  </div>
+  <div class="card">
+    <h3>Typed handle wrappers</h3>
+    <p>Lightweight structs (<code>TextureId</code>, <code>BufferId</code>, <code>ProgramId</code>)
+    wrap raw <code>GLuint</code> so you can't pass a texture handle where a buffer handle is expected.</p>
+  </div>
+  <div class="card">
+    <h3>std::span for data</h3>
+    <p>Buffer upload functions accept <code>std::span&lt;const T&gt;</code> instead of
+    raw pointer + size pairs, eliminating a whole class of size-mismatch bugs.</p>
+  </div>
+  <div class="card">
+    <h3>Zero-overhead</h3>
+    <p>All enum conversions are <code>static_cast</code>. All wrappers are thin inline calls.
+    No virtual dispatch, no heap allocation, no RTTI. Debug build overhead is opt-in.</p>
+  </div>
+  <div class="card">
+    <h3>Debug call logging</h3>
+    <p>Define <code>METAGLDEBUG</code> to enable per-call logging of function names,
+    typed arguments (enum names, not integers), and return values. Zero cost when disabled.</p>
+  </div>
+  <div class="card">
+    <h3>Context &amp; capability tracking</h3>
+    <p>Detect ES version, WebGL version, and extension support at runtime.
+    The context generation counter lets you detect stale handles after context loss.</p>
+  </div>
+</div>
+
+<h2 id="layering">Layering</h2>
+<p>meta-gl is the bottom layer of a two-level graphics library stack:</p>
+<pre><span class="cm">// Host application provides GL context + GetProcAddress</span>
+<span class="ty">easy-gl</span>         <span class="cm">// OOP/RAII resource classes (namespace easygl)</span>
+    └── <span class="ty">meta-gl</span>  <span class="cm">// Procedural safe API     (namespace metagl)</span>
+            └── <span class="cm">actual OpenGL ES driver</span></pre>
+<ul>
+  <li><strong>meta-gl</strong> — procedural, no resource ownership, safe enums, <code>std::span</code>.</li>
+  <li><strong>easy-gl</strong> — OOP/RAII wrappers built <em>on top of</em> meta-gl. easy-gl depends on meta-gl, never the reverse.</li>
+</ul>
+
+<h2 id="quickstart">Quick Start</h2>
+<pre><span class="cm">// 1. Add to your CMakeLists.txt:</span>
+add_subdirectory(../meta-gl meta-gl)
+target_link_libraries(my-target PRIVATE <span class="nm">meta-gl::meta-gl</span>)
+
+<span class="cm">// 2. Initialize once after context creation:</span>
+<span class="kw">#include</span> <span class="st">&lt;metagl/metagl.hpp&gt;</span>
+
+<span class="ty">bool</span> ok = metagl::<span class="fn">Initialize</span>(SDL_GL_GetProcAddress);
+<span class="kw">if</span> (!ok) { <span class="cm">/* handle failure */</span> }
+
+<span class="cm">// 3. Call wrapper functions in the metagl namespace:</span>
+metagl::<span class="fn">glClearColor</span>(<span class="val">0.1f</span>, <span class="val">0.1f</span>, <span class="val">0.1f</span>, <span class="val">1.0f</span>);
+metagl::<span class="fn">glClear</span>(metagl::ClearBufferBit::Color | metagl::ClearBufferBit::Depth);
+
+<span class="ty">metagl::ShaderId</span> shader = metagl::<span class="fn">glCreateShader</span>(metagl::ShaderType::Vertex);
+metagl::<span class="fn">glBindBuffer</span>(metagl::BufferTarget::Array, vbo);</pre>
+
+<h2 id="headers">Public Headers</h2>
+<table>
+  <tr><th>Header</th><th>Contents</th></tr>
+  <tr><td><code>metagl/metagl.hpp</code></td><td>Umbrella header — include this in application code</td></tr>
+  <tr><td><code>metagl/Types.hpp</code></td><td>GL type aliases (<code>GLuint</code>, <code>GLint</code>, <code>GlGetProcAddressFn</code>, …)</td></tr>
+  <tr><td><code>metagl/Enums.hpp</code></td><td>All 89 <code>enum class</code> wrappers for GL constants</td></tr>
+  <tr><td><code>metagl/EnumNames.hpp</code></td><td>Generated <code>to_string()</code> overloads for every enumerator</td></tr>
+  <tr><td><code>metagl/Functions.hpp</code></td><td>Declarations of all 358 <code>metagl::gl*</code> wrapper functions</td></tr>
+  <tr><td><code>metagl/Loader.hpp</code></td><td><code>Initialize()</code>, <code>IsInitialized()</code>, <code>AllFunctionsLoaded()</code>, <code>IsFunctionAvailable()</code></td></tr>
+  <tr><td><code>metagl/Context.hpp</code></td><td>Context info, status, and generation tracking</td></tr>
+  <tr><td><code>metagl/ContextEvents.hpp</code></td><td><code>ContextListener</code> interface, <code>AddContextListener()</code>, <code>RemoveContextListener()</code>, <code>NotifyContextLost()</code>, <code>NotifyContextRestored()</code></td></tr>
+  <tr><td><code>metagl/Capabilities.hpp</code></td><td>Runtime ES/WebGL version and extension detection</td></tr>
+  <tr><td><code>metagl/Debug.hpp</code></td><td>Optional per-call debug logging (zero cost when disabled)</td></tr>
+  <tr><td><code>metagl/Emscripten.hpp</code></td><td>WebGL-specific helpers and Emscripten integration</td></tr>
+</table>
+
+<h2 id="targets">Supported Targets</h2>
+<table>
+  <tr><th>Platform</th><th>API</th><th>Notes</th></tr>
+  <tr><td>Linux / Android / Raspberry Pi</td><td>OpenGL ES 2.0 – 3.2</td><td>EGL or GLFW context</td></tr>
+  <tr><td>Web (Emscripten)</td><td>WebGL 1 / WebGL 2</td><td>Maps to GLES 2 / GLES 3</td></tr>
+  <tr><td>Desktop (Mesa / ANGLE)</td><td>OpenGL ES 3.x via ANGLE</td><td>Windows / macOS compatibility</td></tr>
+</table>
+<div class="callout warn">
+  <p><strong>Note:</strong> Plain desktop OpenGL (non-ES) and OpenGL ES older than 2.0 are not supported.</p>
+</div>
+
+</main>
+</div>
+
+<footer>meta-gl — OpenEggbert project &mdash; C++23 &mdash; OpenGL ES 2.0+</footer>
+</body>
+</html>

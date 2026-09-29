@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Function Reference — meta-gl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <span class="logo">meta-gl</span>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="getting-started.html">Getting Started</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="enums.html">Enums</a>
+    <a href="functions.html" class="active">Functions</a>
+    <a href="types.html">Types</a>
+    <a href="context.html">Context</a>
+    <a href="context-events.html">Ctx Events</a>
+    <a href="capabilities.html">Capabilities</a>
+    <a href="debug.html">Debug</a>
+    <a href="examples.html">Examples</a>
+    <a href="changelog.html">Changelog</a>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Groups</h3>
+  <ul>
+    <li><a href="#state">State Management</a></li>
+    <li><a href="#buffers">Buffer Objects</a></li>
+    <li><a href="#varrays">Vertex Arrays</a></li>
+    <li><a href="#drawing">Drawing</a></li>
+    <li><a href="#shaders">Shaders</a></li>
+    <li><a href="#uniforms">Uniforms</a></li>
+    <li><a href="#textures">Textures</a></li>
+    <li><a href="#framebuffers">Framebuffers</a></li>
+    <li><a href="#query">Queries &amp; Sync</a></li>
+    <li><a href="#compute">Compute</a></li>
+    <li><a href="#debug-fn">Debug</a></li>
+    <li><a href="#transform">Transform Feedback</a></li>
+  </ul>
+</aside>
+
+<main class="content">
+<h1>Function Reference</h1>
+<p>
+  All functions are declared in <code>include/metagl/Functions.hpp</code> and live in
+  the <code>metagl</code> namespace. Each maps directly to one underlying
+  <code>gl*</code> OpenGL ES call. Numbers (#1, #2 …) correspond to the internal
+  ordering in the source file. ES version tags show the minimum required version.
+</p>
+
+<h2 id="state">State Management (#1 – #51)</h2>
+
+<h3>Capabilities</h3>
+<pre><span class="kw">void</span> <span class="fn">glEnable</span>(<span class="ty">Capability</span> cap);                          <span class="cm">// #1 ES2+</span>
+<span class="kw">void</span> <span class="fn">glDisable</span>(<span class="ty">Capability</span> cap);                         <span class="cm">// #2 ES2+</span>
+<span class="kw">void</span> <span class="fn">glEnablei</span>(<span class="ty">Capability</span> target, <span class="ty">GLuint</span> index);       <span class="cm">// #3 ES3.2</span>
+<span class="kw">void</span> <span class="fn">glDisablei</span>(<span class="ty">Capability</span> target, <span class="ty">GLuint</span> index);      <span class="cm">// #4 ES3.2</span>
+<span class="ty">bool</span> <span class="fn">glIsEnabled</span>(<span class="ty">Capability</span> cap);                 <span class="cm">// #5 ES2+</span>
+<span class="ty">bool</span> <span class="fn">glIsEnabledi</span>(<span class="ty">Capability</span> target, <span class="ty">GLuint</span> i);  <span class="cm">// #6 ES3.2</span></pre>
+
+<h3>Blending</h3>
+<pre><span class="kw">void</span> <span class="fn">glBlendFunc</span>(<span class="ty">BlendFactor</span> sfactor, <span class="ty">BlendFactor</span> dfactor);              <span class="cm">// #7</span>
+<span class="kw">void</span> <span class="fn">glBlendFuncSeparate</span>(<span class="ty">BlendFactor</span> sRGB, <span class="ty">BlendFactor</span> dRGB,
+                          <span class="ty">BlendFactor</span> sA, <span class="ty">BlendFactor</span> dA);              <span class="cm">// #8</span>
+<span class="kw">void</span> <span class="fn">glBlendFunci</span>(<span class="ty">GLuint</span> buf, <span class="ty">BlendFactor</span> src, <span class="ty">BlendFactor</span> dst);         <span class="cm">// #9  ES3.2</span>
+<span class="kw">void</span> <span class="fn">glBlendFuncSeparatei</span>(<span class="ty">GLuint</span> buf, ...);                               <span class="cm">// #10 ES3.2</span>
+<span class="kw">void</span> <span class="fn">glBlendEquation</span>(<span class="ty">BlendEquation</span> mode);                                 <span class="cm">// #11</span>
+<span class="kw">void</span> <span class="fn">glBlendEquationSeparate</span>(<span class="ty">BlendEquation</span> mRGB, <span class="ty">BlendEquation</span> mA);       <span class="cm">// #12</span>
+<span class="kw">void</span> <span class="fn">glBlendEquationi</span>(<span class="ty">GLuint</span> buf, <span class="ty">BlendEquation</span> mode);                    <span class="cm">// #13 ES3.2</span>
+<span class="kw">void</span> <span class="fn">glBlendEquationSeparatei</span>(<span class="ty">GLuint</span> buf, ...);                            <span class="cm">// #14 ES3.2</span>
+<span class="kw">void</span> <span class="fn">glBlendColor</span>(<span class="ty">GLfloat</span> r, <span class="ty">GLfloat</span> g, <span class="ty">GLfloat</span> b, <span class="ty">GLfloat</span> a);            <span class="cm">// #15</span>
+<span class="kw">void</span> <span class="fn">glBlendBarrier</span>(<span class="kw">void</span>);                                                 <span class="cm">// #16 ES3.2</span></pre>
+
+<h3>Depth &amp; Stencil</h3>
+<pre><span class="kw">void</span> <span class="fn">glDepthFunc</span>(<span class="ty">CompareFunc</span> func);                                       <span class="cm">// #19</span>
+<span class="kw">void</span> <span class="fn">glDepthMask</span>(<span class="ty">GLboolean</span> flag);                                          <span class="cm">// #20</span>
+<span class="kw">void</span> <span class="fn">glDepthRangef</span>(<span class="ty">GLfloat</span> n, <span class="ty">GLfloat</span> f);                                  <span class="cm">// #21</span>
+<span class="kw">void</span> <span class="fn">glStencilFunc</span>(<span class="ty">CompareFunc</span> func, <span class="ty">GLint</span> ref, <span class="ty">GLuint</span> mask);             <span class="cm">// #22</span>
+<span class="kw">void</span> <span class="fn">glStencilFuncSeparate</span>(<span class="ty">CullFace</span> face, <span class="ty">CompareFunc</span> func, ...);          <span class="cm">// #23</span>
+<span class="kw">void</span> <span class="fn">glStencilOp</span>(<span class="ty">StencilOp</span> fail, <span class="ty">StencilOp</span> zfail, <span class="ty">StencilOp</span> zpass);       <span class="cm">// #24</span>
+<span class="kw">void</span> <span class="fn">glStencilOpSeparate</span>(<span class="ty">CullFace</span> face, <span class="ty">StencilOp</span> sf, <span class="ty">StencilOp</span> dp, <span class="ty">StencilOp</span> zp); <span class="cm">// #25</span>
+<span class="kw">void</span> <span class="fn">glStencilMask</span>(<span class="ty">GLuint</span> mask);                                            <span class="cm">// #26</span>
+<span class="kw">void</span> <span class="fn">glStencilMaskSeparate</span>(<span class="ty">CullFace</span> face, <span class="ty">GLuint</span> mask);                    <span class="cm">// #27</span></pre>
+
+<h3>Viewport, Scissor &amp; Raster</h3>
+<pre><span class="kw">void</span> <span class="fn">glScissor</span>(<span class="ty">GLint</span> x, <span class="ty">GLint</span> y, <span class="ty">GLsizei</span> w, <span class="ty">GLsizei</span> h);                   <span class="cm">// #28</span>
+<span class="kw">void</span> <span class="fn">glViewport</span>(<span class="ty">GLint</span> x, <span class="ty">GLint</span> y, <span class="ty">GLsizei</span> w, <span class="ty">GLsizei</span> h);                  <span class="cm">// #29</span>
+<span class="kw">void</span> <span class="fn">glCullFace</span>(<span class="ty">CullFace</span> mode);                                             <span class="cm">// #30</span>
+<span class="kw">void</span> <span class="fn">glFrontFace</span>(<span class="ty">FrontFace</span> mode);                                           <span class="cm">// #31</span>
+<span class="kw">void</span> <span class="fn">glLineWidth</span>(<span class="ty">GLfloat</span> width);                                             <span class="cm">// #32</span>
+<span class="kw">void</span> <span class="fn">glPolygonOffset</span>(<span class="ty">GLfloat</span> factor, <span class="ty">GLfloat</span> units);                        <span class="cm">// #33</span>
+<span class="kw">void</span> <span class="fn">glSampleCoverage</span>(<span class="ty">GLfloat</span> value, <span class="ty">GLboolean</span> invert);                    <span class="cm">// #34</span>
+<span class="kw">void</span> <span class="fn">glSampleMaski</span>(<span class="ty">GLuint</span> maskNumber, <span class="ty">GLbitfield</span> mask);                     <span class="cm">// #35 ES3.1</span>
+<span class="kw">void</span> <span class="fn">glMinSampleShading</span>(<span class="ty">GLfloat</span> value);                                     <span class="cm">// #36 ES3.2</span>
+<span class="kw">void</span> <span class="fn">glHint</span>(<span class="ty">HintTarget</span> target, <span class="ty">HintMode</span> mode);                             <span class="cm">// #37</span>
+<span class="kw">void</span> <span class="fn">glPixelStorei</span>(<span class="ty">PixelStoreParam</span> pname, <span class="ty">GLint</span> param);                    <span class="cm">// #38</span></pre>
+
+<h3>Flush, Errors &amp; State Query</h3>
+<pre><span class="kw">void</span>       <span class="fn">glFinish</span>(<span class="kw">void</span>);                                                  <span class="cm">// #39</span>
+<span class="kw">void</span>       <span class="fn">glFlush</span>(<span class="kw">void</span>);                                                   <span class="cm">// #40</span>
+<span class="ty">ErrorCode</span>  <span class="fn">glGetError</span>(<span class="kw">void</span>);                                                <span class="cm">// #41</span>
+<span class="kw">void</span>       <span class="fn">glGetBooleanv</span>(<span class="ty">GetParameter</span> pname, <span class="ty">GLboolean</span>* data);             <span class="cm">// #42</span>
+<span class="kw">void</span>       <span class="fn">glGetIntegerv</span>(<span class="ty">GetParameter</span> pname, <span class="ty">GLint</span>* data);                 <span class="cm">// #43</span>
+<span class="kw">void</span>       <span class="fn">glGetFloatv</span>(<span class="ty">GetParameter</span> pname, <span class="ty">GLfloat</span>* data);                 <span class="cm">// #44</span>
+<span class="kw">void</span>       <span class="fn">glGetInteger64v</span>(<span class="ty">GetParameter</span> pname, <span class="ty">GLint64</span>* data);             <span class="cm">// #45 ES3+</span>
+<span class="kw">const</span> <span class="ty">GLubyte</span>* <span class="fn">glGetString</span>(<span class="ty">StringName</span> name);                               <span class="cm">// #49</span>
+<span class="kw">const</span> <span class="ty">GLubyte</span>* <span class="fn">glGetStringi</span>(<span class="ty">StringName</span> name, <span class="ty">GLuint</span> index);               <span class="cm">// #50 ES3+</span></pre>
+
+<h2 id="buffers">Buffer Objects (#52 – #66)</h2>
+<pre><span class="kw">void</span>      <span class="fn">glGenBuffers</span>(<span class="ty">GLsizei</span> n, <span class="ty">GLuint</span>* buffers);                        <span class="cm">// #52</span>
+<span class="kw">void</span>      <span class="fn">glDeleteBuffers</span>(<span class="ty">GLsizei</span> n, <span class="kw">const</span> <span class="ty">GLuint</span>* buffers);               <span class="cm">// #53</span>
+<span class="kw">void</span>      <span class="fn">glBindBuffer</span>(<span class="ty">BufferTarget</span> target, <span class="ty">GLuint</span> buffer);               <span class="cm">// #54</span>
+<span class="kw">void</span>      <span class="fn">glBindBufferBase</span>(<span class="ty">BufferTarget</span> target, <span class="ty">GLuint</span> index, <span class="ty">GLuint</span> buf); <span class="cm">// #55 ES3+</span>
+<span class="kw">void</span>      <span class="fn">glBindBufferRange</span>(<span class="ty">BufferTarget</span>, <span class="ty">GLuint</span> idx, <span class="ty">GLuint</span> buf,
+                             <span class="ty">GLintptr</span> offset, <span class="ty">GLsizeiptr</span> size);             <span class="cm">// #56 ES3+</span>
+<span class="kw">void</span>      <span class="fn">glBufferData</span>(<span class="ty">BufferTarget</span> target, <span class="ty">GLsizeiptr</span> size,
+                        <span class="kw">const</span> <span class="kw">void</span>* data, <span class="ty">BufferUsage</span> usage);              <span class="cm">// #57</span>
+<span class="kw">void</span>      <span class="fn">glBufferSubData</span>(<span class="ty">BufferTarget</span>, <span class="ty">GLintptr</span> offset,
+                           <span class="ty">GLsizeiptr</span> size, <span class="kw">const</span> <span class="kw">void</span>* data);             <span class="cm">// #58</span>
+<span class="kw">void</span>      <span class="fn">glCopyBufferSubData</span>(<span class="ty">BufferTarget</span> read, <span class="ty">BufferTarget</span> write,
+                               <span class="ty">GLintptr</span> rOff, <span class="ty">GLintptr</span> wOff, <span class="ty">GLsizeiptr</span>);  <span class="cm">// #59 ES3+</span>
+<span class="kw">void</span>*     <span class="fn">glMapBufferRange</span>(<span class="ty">BufferTarget</span>, <span class="ty">GLintptr</span> offset,
+                            <span class="ty">GLsizeiptr</span> length, <span class="ty">MapBufferAccessMask</span>);       <span class="cm">// #60 ES3+</span>
+<span class="kw">void</span>      <span class="fn">glFlushMappedBufferRange</span>(<span class="ty">BufferTarget</span>, <span class="ty">GLintptr</span>, <span class="ty">GLsizeiptr</span>);   <span class="cm">// #61 ES3+</span>
+<span class="ty">bool</span> <span class="fn">glUnmapBuffer</span>(<span class="ty">BufferTarget</span> target);                              <span class="cm">// #62 ES3+</span>
+<span class="ty">bool</span> <span class="fn">glIsBuffer</span>(<span class="ty">GLuint</span> buffer);                                       <span class="cm">// #63</span></pre>
+
+<h2 id="varrays">Vertex Arrays (#67 – #97)</h2>
+<pre><span class="kw">void</span>      <span class="fn">glGenVertexArrays</span>(<span class="ty">GLsizei</span> n, <span class="ty">GLuint</span>* arrays);                    <span class="cm">// #67 ES3+</span>
+<span class="kw">void</span>      <span class="fn">glDeleteVertexArrays</span>(<span class="ty">GLsizei</span> n, <span class="kw">const</span> <span class="ty">GLuint</span>*);                 <span class="cm">// #68 ES3+</span>
+<span class="kw">void</span>      <span class="fn">glBindVertexArray</span>(<span class="ty">GLuint</span> array);                                  <span class="cm">// #69 ES3+</span>
+<span class="kw">void</span>      <span class="fn">glEnableVertexAttribArray</span>(<span class="ty">GLuint</span> index);                          <span class="cm">// #71</span>
+<span class="kw">void</span>      <span class="fn">glDisableVertexAttribArray</span>(<span class="ty">GLuint</span> index);                         <span class="cm">// #72</span>
+<span class="kw">void</span>      <span class="fn">glVertexAttribPointer</span>(<span class="ty">GLuint</span> idx, <span class="ty">GLint</span> size,
+                                  <span class="ty">DataType</span> type, <span class="ty">GLboolean</span> norm,
+                                  <span class="ty">GLsizei</span> stride, <span class="kw">const</span> <span class="kw">void</span>* ptr);        <span class="cm">// #73</span>
+<span class="kw">void</span>      <span class="fn">glVertexAttribIPointer</span>(<span class="ty">GLuint</span> idx, <span class="ty">GLint</span> size, <span class="ty">DataType</span> type,
+                                   <span class="ty">GLsizei</span> stride, <span class="kw">const</span> <span class="kw">void</span>* ptr);        <span class="cm">// #74 ES3+</span>
+<span class="kw">void</span>      <span class="fn">glVertexAttribDivisor</span>(<span class="ty">GLuint</span> index, <span class="ty">GLuint</span> divisor);             <span class="cm">// #75 ES3+</span>
+<span class="cm">// Constant attribute setters: glVertexAttrib1f/2f/3f/4f + array variants     #76–#87</span>
+<span class="cm">// ES 3.1 vertex buffer binding API:                                           #93–#97</span>
+<span class="kw">void</span>      <span class="fn">glVertexAttribFormat</span>(<span class="ty">GLuint</span> idx, <span class="ty">GLint</span> sz, <span class="ty">DataType</span>, <span class="ty">GLboolean</span>, <span class="ty">GLuint</span>);
+<span class="kw">void</span>      <span class="fn">glBindVertexBuffer</span>(<span class="ty">GLuint</span> bindidx, <span class="ty">GLuint</span> buf, <span class="ty">GLintptr</span>, <span class="ty">GLsizei</span>);</pre>
+
+<h2 id="drawing">Drawing (#98 – #119)</h2>
+<pre><span class="cm">// Non-indexed</span>
+<span class="kw">void</span> <span class="fn">glDrawArrays</span>(<span class="ty">PrimitiveType</span> mode, <span class="ty">GLint</span> first, <span class="ty">GLsizei</span> count);          <span class="cm">// #98</span>
+<span class="kw">void</span> <span class="fn">glDrawArraysInstanced</span>(<span class="ty">PrimitiveType</span>, <span class="ty">GLint</span>, <span class="ty">GLsizei</span>, <span class="ty">GLsizei</span>);         <span class="cm">// #99  ES3+</span>
+<span class="kw">void</span> <span class="fn">glDrawArraysIndirect</span>(<span class="ty">PrimitiveType</span>, <span class="kw">const</span> <span class="kw">void</span>*);                       <span class="cm">// #100 ES3.1</span>
+<span class="cm">// Indexed</span>
+<span class="kw">void</span> <span class="fn">glDrawElements</span>(<span class="ty">PrimitiveType</span>, <span class="ty">GLsizei</span>, <span class="ty">DataType</span>, <span class="kw">const</span> <span class="kw">void</span>*);         <span class="cm">// #101</span>
+<span class="kw">void</span> <span class="fn">glDrawElementsInstanced</span>(...);                                              <span class="cm">// #102 ES3+</span>
+<span class="kw">void</span> <span class="fn">glDrawRangeElements</span>(...);                                                   <span class="cm">// #103 ES3+</span>
+<span class="kw">void</span> <span class="fn">glDrawElementsBaseVertex</span>(<span class="ty">PrimitiveType</span>, <span class="ty">GLsizei</span>, <span class="ty">DataType</span>,
+                               <span class="kw">const</span> <span class="kw">void</span>*, <span class="ty">GLint</span> basevertex);               <span class="cm">// #104 ES3.2</span>
+<span class="kw">void</span> <span class="fn">glDrawElementsIndirect</span>(<span class="ty">PrimitiveType</span>, <span class="ty">DataType</span>, <span class="kw">const</span> <span class="kw">void</span>*);           <span class="cm">// #107 ES3.1</span>
+<span class="cm">// Read / Clear</span>
+<span class="kw">void</span> <span class="fn">glReadPixels</span>(<span class="ty">GLint</span> x, <span class="ty">GLint</span> y, <span class="ty">GLsizei</span> w, <span class="ty">GLsizei</span> h,
+                   <span class="ty">PixelFormat</span>, <span class="ty">PixelType</span>, <span class="kw">void</span>*);                           <span class="cm">// #110</span>
+<span class="kw">void</span> <span class="fn">glClear</span>(<span class="ty">ClearBufferBit</span> mask);                                             <span class="cm">// #112</span>
+<span class="kw">void</span> <span class="fn">glClearColor</span>(<span class="ty">GLfloat</span> r, <span class="ty">GLfloat</span> g, <span class="ty">GLfloat</span> b, <span class="ty">GLfloat</span> a);              <span class="cm">// #113</span>
+<span class="kw">void</span> <span class="fn">glClearDepthf</span>(<span class="ty">GLfloat</span> d);                                                 <span class="cm">// #114</span>
+<span class="kw">void</span> <span class="fn">glClearStencil</span>(<span class="ty">GLint</span> s);                                                  <span class="cm">// #115</span>
+<span class="cm">// ES3+ typed clears: glClearBufferfv/iv/uiv/fi                                 #116–#119</span></pre>
+
+<h2 id="shaders">Shaders &amp; Programs (#120 – #153)</h2>
+<pre><span class="ty">GLuint</span> <span class="fn">glCreateShader</span>(<span class="ty">ShaderType</span> type);                                      <span class="cm">// #120</span>
+<span class="kw">void</span>   <span class="fn">glDeleteShader</span>(<span class="ty">GLuint</span> shader);                                         <span class="cm">// #121</span>
+<span class="kw">void</span>   <span class="fn">glShaderSource</span>(<span class="ty">GLuint</span> shader, <span class="ty">GLsizei</span> count,
+                        <span class="kw">const</span> <span class="ty">GLchar</span>*<span class="kw">const</span>*, <span class="kw">const</span> <span class="ty">GLint</span>*);                  <span class="cm">// #122</span>
+<span class="kw">void</span>   <span class="fn">glCompileShader</span>(<span class="ty">GLuint</span> shader);                                        <span class="cm">// #123</span>
+<span class="kw">void</span>   <span class="fn">glGetShaderiv</span>(<span class="ty">GLuint</span> shader, <span class="ty">ShaderParameter</span> pname, <span class="ty">GLint</span>*);         <span class="cm">// #126</span>
+<span class="kw">void</span>   <span class="fn">glGetShaderInfoLog</span>(<span class="ty">GLuint</span>, <span class="ty">GLsizei</span>, <span class="ty">GLsizei</span>*, <span class="ty">GLchar</span>*);              <span class="cm">// #127</span>
+<span class="ty">GLuint</span> <span class="fn">glCreateProgram</span>(<span class="kw">void</span>);                                                  <span class="cm">// #131</span>
+<span class="kw">void</span>   <span class="fn">glDeleteProgram</span>(<span class="ty">GLuint</span> program);                                        <span class="cm">// #132</span>
+<span class="kw">void</span>   <span class="fn">glAttachShader</span>(<span class="ty">GLuint</span> program, <span class="ty">GLuint</span> shader);                         <span class="cm">// #133</span>
+<span class="kw">void</span>   <span class="fn">glDetachShader</span>(<span class="ty">GLuint</span> program, <span class="ty">GLuint</span> shader);                         <span class="cm">// #134</span>
+<span class="kw">void</span>   <span class="fn">glLinkProgram</span>(<span class="ty">GLuint</span> program);                                          <span class="cm">// #135</span>
+<span class="kw">void</span>   <span class="fn">glUseProgram</span>(<span class="ty">GLuint</span> program);                                           <span class="cm">// #136</span>
+<span class="kw">void</span>   <span class="fn">glGetProgramiv</span>(<span class="ty">GLuint</span> program, <span class="ty">ProgramParameter</span> pname, <span class="ty">GLint</span>*);      <span class="cm">// #138</span>
+<span class="kw">void</span>   <span class="fn">glGetProgramInfoLog</span>(<span class="ty">GLuint</span>, <span class="ty">GLsizei</span>, <span class="ty">GLsizei</span>*, <span class="ty">GLchar</span>*);            <span class="cm">// #139</span>
+<span class="ty">GLint</span>  <span class="fn">glGetAttribLocation</span>(<span class="ty">GLuint</span> program, <span class="kw">const</span> <span class="ty">GLchar</span>* name);              <span class="cm">// #143</span></pre>
+
+<h2 id="uniforms">Uniforms (#154 – #230)</h2>
+<pre><span class="ty">GLint</span> <span class="fn">glGetUniformLocation</span>(<span class="ty">GLuint</span> program, <span class="kw">const</span> <span class="ty">GLchar</span>* name);             <span class="cm">// #154</span>
+<span class="kw">void</span>  <span class="fn">glUniform1f</span>(<span class="ty">GLint</span> loc, <span class="ty">GLfloat</span> v0);                                    <span class="cm">// #162</span>
+<span class="kw">void</span>  <span class="fn">glUniform2f</span>(<span class="ty">GLint</span> loc, <span class="ty">GLfloat</span> v0, <span class="ty">GLfloat</span> v1);                        <span class="cm">// #163</span>
+<span class="kw">void</span>  <span class="fn">glUniform3f</span>(<span class="ty">GLint</span> loc, <span class="ty">GLfloat</span> v0, <span class="ty">GLfloat</span> v1, <span class="ty">GLfloat</span> v2);           <span class="cm">// #164</span>
+<span class="kw">void</span>  <span class="fn">glUniform4f</span>(<span class="ty">GLint</span> loc, <span class="ty">GLfloat</span> v0, <span class="ty">GLfloat</span> v1, <span class="ty">GLfloat</span> v2, <span class="ty">GLfloat</span> v3); <span class="cm">// #165</span>
+<span class="kw">void</span>  <span class="fn">glUniform1i</span>(<span class="ty">GLint</span> loc, <span class="ty">GLint</span> v0);                                       <span class="cm">// #166</span>
+<span class="kw">void</span>  <span class="fn">glUniform2i / 3i / 4i</span> (...);                                               <span class="cm">// #167–#169</span>
+<span class="kw">void</span>  <span class="fn">glUniform1fv / 2fv / 3fv / 4fv</span> (...);                                     <span class="cm">// float array variants</span>
+<span class="kw">void</span>  <span class="fn">glUniform1iv / 2iv / 3iv / 4iv</span> (...);                                     <span class="cm">// int array variants</span>
+<span class="kw">void</span>  <span class="fn">glUniformMatrix2fv / 3fv / 4fv</span>(<span class="ty">GLint</span> loc, <span class="ty">GLsizei</span> count,
+                                        <span class="ty">GLboolean</span> transpose, <span class="kw">const</span> <span class="ty">GLfloat</span>*); <span class="cm">// matrices</span>
+<span class="kw">void</span>  <span class="fn">glUniformBlockBinding</span>(<span class="ty">GLuint</span> prog, <span class="ty">GLuint</span> blockIdx, <span class="ty">GLuint</span> binding);   <span class="cm">// #161 ES3+</span></pre>
+
+<h2 id="textures">Textures (#231 – #310)</h2>
+<pre><span class="kw">void</span>      <span class="fn">glGenTextures</span>(<span class="ty">GLsizei</span> n, <span class="ty">GLuint</span>* textures);
+<span class="kw">void</span>      <span class="fn">glDeleteTextures</span>(<span class="ty">GLsizei</span> n, <span class="kw">const</span> <span class="ty">GLuint</span>*);
+<span class="kw">void</span>      <span class="fn">glBindTexture</span>(<span class="ty">TextureTarget</span> target, <span class="ty">GLuint</span> texture);
+<span class="kw">void</span>      <span class="fn">glActiveTexture</span>(<span class="ty">TextureUnit</span> texture);
+<span class="kw">void</span>      <span class="fn">glTexImage2D</span>(<span class="ty">TextureTarget</span>, <span class="ty">GLint</span> level, <span class="ty">InternalFormat</span>,
+                         <span class="ty">GLsizei</span> w, <span class="ty">GLsizei</span> h, <span class="ty">GLint</span> border,
+                         <span class="ty">PixelFormat</span>, <span class="ty">PixelType</span>, <span class="kw">const</span> <span class="kw">void</span>*);
+<span class="kw">void</span>      <span class="fn">glTexSubImage2D</span>(...);
+<span class="kw">void</span>      <span class="fn">glTexImage3D</span>(...);                                                   <span class="cm">// ES3+</span>
+<span class="kw">void</span>      <span class="fn">glTexStorage2D</span>(<span class="ty">TextureTarget</span>, <span class="ty">GLsizei</span> levels,
+                           <span class="ty">InternalFormat</span>, <span class="ty">GLsizei</span> w, <span class="ty">GLsizei</span> h);             <span class="cm">// ES3+</span>
+<span class="kw">void</span>      <span class="fn">glTexStorage3D</span>(...);                                                  <span class="cm">// ES3+</span>
+<span class="kw">void</span>      <span class="fn">glTexParameteri</span>(<span class="ty">TextureTarget</span>, <span class="ty">TextureParameter</span>, <span class="ty">GLint</span>);
+<span class="kw">void</span>      <span class="fn">glTexParameterf</span>(<span class="ty">TextureTarget</span>, <span class="ty">TextureParameter</span>, <span class="ty">GLfloat</span>);
+<span class="kw">void</span>      <span class="fn">glGenerateMipmap</span>(<span class="ty">TextureTarget</span> target);
+<span class="kw">void</span>      <span class="fn">glCompressedTexImage2D</span>(<span class="ty">TextureTarget</span>, <span class="ty">GLint</span> level,
+                                   <span class="ty">CompressedInternalFormat</span>, <span class="ty">GLsizei</span> w,
+                                   <span class="ty">GLsizei</span> h, <span class="ty">GLint</span> border, <span class="ty">GLsizei</span> size,
+                                   <span class="kw">const</span> <span class="kw">void</span>* data);</pre>
+
+<h2 id="framebuffers">Framebuffers &amp; Renderbuffers (#311 – #360)</h2>
+<pre><span class="kw">void</span>           <span class="fn">glGenFramebuffers</span>(<span class="ty">GLsizei</span> n, <span class="ty">GLuint</span>*);
+<span class="kw">void</span>           <span class="fn">glDeleteFramebuffers</span>(<span class="ty">GLsizei</span> n, <span class="kw">const</span> <span class="ty">GLuint</span>*);
+<span class="kw">void</span>           <span class="fn">glBindFramebuffer</span>(<span class="ty">FramebufferTarget</span>, <span class="ty">GLuint</span>);
+<span class="ty">FramebufferStatus</span> <span class="fn">glCheckFramebufferStatus</span>(<span class="ty">FramebufferTarget</span>);
+<span class="kw">void</span>           <span class="fn">glFramebufferTexture2D</span>(<span class="ty">FramebufferTarget</span>, <span class="ty">FramebufferAttachment</span>,
+                                       <span class="ty">TextureTarget</span>, <span class="ty">GLuint</span>, <span class="ty">GLint</span> level);
+<span class="kw">void</span>           <span class="fn">glFramebufferRenderbuffer</span>(<span class="ty">FramebufferTarget</span>,
+                                         <span class="ty">FramebufferAttachment</span>,
+                                         <span class="ty">RenderbufferTarget</span>, <span class="ty">GLuint</span>);
+<span class="kw">void</span>           <span class="fn">glGenRenderbuffers</span>(<span class="ty">GLsizei</span> n, <span class="ty">GLuint</span>*);
+<span class="kw">void</span>           <span class="fn">glDeleteRenderbuffers</span>(<span class="ty">GLsizei</span> n, <span class="kw">const</span> <span class="ty">GLuint</span>*);
+<span class="kw">void</span>           <span class="fn">glBindRenderbuffer</span>(<span class="ty">RenderbufferTarget</span>, <span class="ty">GLuint</span>);
+<span class="kw">void</span>           <span class="fn">glRenderbufferStorage</span>(<span class="ty">RenderbufferTarget</span>, <span class="ty">InternalFormat</span>,
+                                      <span class="ty">GLsizei</span> w, <span class="ty">GLsizei</span> h);
+<span class="kw">void</span>           <span class="fn">glRenderbufferStorageMultisample</span>(...);                           <span class="cm">// ES3+</span>
+<span class="kw">void</span>           <span class="fn">glBlitFramebuffer</span>(<span class="ty">GLint</span> sX0,<span class="ty">GLint</span> sY0,<span class="ty">GLint</span> sX1,<span class="ty">GLint</span> sY1,
+                                   <span class="ty">GLint</span> dX0,<span class="ty">GLint</span> dY0,<span class="ty">GLint</span> dX1,<span class="ty">GLint</span> dY1,
+                                   <span class="ty">ClearBufferBit</span>, <span class="ty">BlitFilter</span>);              <span class="cm">// ES3+</span></pre>
+
+<h2 id="query">Queries &amp; GPU Sync (#361 – #390)</h2>
+<pre><span class="cm">// Occlusion &amp; primitives queries (ES3+)</span>
+<span class="kw">void</span>      <span class="fn">glGenQueries</span>(<span class="ty">GLsizei</span> n, <span class="ty">GLuint</span>* ids);
+<span class="kw">void</span>      <span class="fn">glDeleteQueries</span>(<span class="ty">GLsizei</span> n, <span class="kw">const</span> <span class="ty">GLuint</span>*);
+<span class="kw">void</span>      <span class="fn">glBeginQuery</span>(<span class="ty">QueryTarget</span>, <span class="ty">GLuint</span> id);
+<span class="kw">void</span>      <span class="fn">glEndQuery</span>(<span class="ty">QueryTarget</span>);
+<span class="kw">void</span>      <span class="fn">glGetQueryObjectuiv</span>(<span class="ty">GLuint</span> id, <span class="ty">QueryObjectParameter</span>, <span class="ty">GLuint</span>*);
+<span class="cm">// Fence sync (ES3+)</span>
+<span class="ty">GLsync</span>    <span class="fn">glFenceSync</span>(<span class="ty">SyncCondition</span>, <span class="ty">GLbitfield</span> flags);
+<span class="kw">void</span>      <span class="fn">glDeleteSync</span>(<span class="ty">GLsync</span>);
+<span class="ty">SyncWaitResult</span> <span class="fn">glClientWaitSync</span>(<span class="ty">GLsync</span>, <span class="ty">SyncFlushMask</span>, <span class="ty">GLuint64</span> timeout);
+<span class="kw">void</span>      <span class="fn">glWaitSync</span>(<span class="ty">GLsync</span>, <span class="ty">GLbitfield</span>, <span class="ty">GLuint64</span>);</pre>
+
+<h2 id="compute">Compute Shaders (#391 – #400, ES 3.1+)</h2>
+<pre><span class="kw">void</span> <span class="fn">glDispatchCompute</span>(<span class="ty">GLuint</span> numGroupsX, <span class="ty">GLuint</span> numGroupsY, <span class="ty">GLuint</span> numGroupsZ);
+<span class="kw">void</span> <span class="fn">glDispatchComputeIndirect</span>(<span class="ty">GLintptr</span> indirect);
+<span class="kw">void</span> <span class="fn">glMemoryBarrier</span>(<span class="ty">MemoryBarrierMask</span> barriers);
+<span class="kw">void</span> <span class="fn">glMemoryBarrierByRegion</span>(<span class="ty">MemoryBarrierMask</span> barriers);
+<span class="kw">void</span> <span class="fn">glBindImageTexture</span>(<span class="ty">GLuint</span> unit, <span class="ty">GLuint</span> texture, <span class="ty">GLint</span> level,
+                          <span class="ty">GLboolean</span> layered, <span class="ty">GLint</span> layer,
+                          <span class="ty">ImageAccess</span> access, <span class="ty">InternalFormat</span> format);</pre>
+
+<h2 id="debug-fn">Debug Callbacks (ES 3.2+)</h2>
+<pre><span class="kw">void</span> <span class="fn">glDebugMessageCallback</span>(<span class="ty">GLDEBUGPROC</span> callback, <span class="kw">const</span> <span class="kw">void</span>* userParam);
+<span class="kw">void</span> <span class="fn">glDebugMessageControl</span>(<span class="ty">DebugSource</span>, <span class="ty">DebugType</span>, <span class="ty">DebugSeverity</span>,
+                             <span class="ty">GLsizei</span> count, <span class="kw">const</span> <span class="ty">GLuint</span>* ids,
+                             <span class="ty">GLboolean</span> enabled);
+<span class="kw">void</span> <span class="fn">glDebugMessageInsert</span>(<span class="ty">DebugSource</span>, <span class="ty">DebugType</span>, <span class="ty">GLuint</span> id,
+                            <span class="ty">DebugSeverity</span>, <span class="ty">GLsizei</span> length,
+                            <span class="kw">const</span> <span class="ty">GLchar</span>* message);
+<span class="kw">void</span> <span class="fn">glObjectLabel</span>(<span class="ty">DebugObjectLabel</span> identifier, <span class="ty">GLuint</span> name,
+                     <span class="ty">GLsizei</span> length, <span class="kw">const</span> <span class="ty">GLchar</span>* label);
+<span class="kw">void</span> <span class="fn">glPushDebugGroup</span>(<span class="ty">DebugSource</span>, <span class="ty">GLuint</span> id, <span class="ty">GLsizei</span>, <span class="kw">const</span> <span class="ty">GLchar</span>*);
+<span class="kw">void</span> <span class="fn">glPopDebugGroup</span>(<span class="kw">void</span>);</pre>
+
+<h2 id="transform">Transform Feedback (ES 3.0+)</h2>
+<pre><span class="kw">void</span> <span class="fn">glGenTransformFeedbacks</span>(<span class="ty">GLsizei</span> n, <span class="ty">GLuint</span>*);
+<span class="kw">void</span> <span class="fn">glDeleteTransformFeedbacks</span>(<span class="ty">GLsizei</span> n, <span class="kw">const</span> <span class="ty">GLuint</span>*);
+<span class="kw">void</span> <span class="fn">glBindTransformFeedback</span>(<span class="ty">TransformFeedbackTarget</span>, <span class="ty">GLuint</span>);
+<span class="kw">void</span> <span class="fn">glBeginTransformFeedback</span>(<span class="ty">PrimitiveType</span> primitiveMode);
+<span class="kw">void</span> <span class="fn">glEndTransformFeedback</span>(<span class="kw">void</span>);
+<span class="kw">void</span> <span class="fn">glPauseTransformFeedback</span>(<span class="kw">void</span>);
+<span class="kw">void</span> <span class="fn">glResumeTransformFeedback</span>(<span class="kw">void</span>);
+<span class="kw">void</span> <span class="fn">glTransformFeedbackVaryings</span>(<span class="ty">GLuint</span> program, <span class="ty">GLsizei</span> count,
+                                   <span class="kw">const</span> <span class="ty">GLchar</span>*<span class="kw">const</span>* varyings,
+                                   <span class="ty">TransformFeedbackBufferMode</span>);
+<span class="kw">void</span> <span class="fn">glDrawTransformFeedback</span>(<span class="ty">PrimitiveType</span>, <span class="ty">GLuint</span> id);                      <span class="cm">// ES3.2</span></pre>
+
+</main>
+</div>
+<footer>meta-gl — OpenEggbert project</footer>
+</body>
+</html>
