@@ -1,8 +1,12 @@
 name: CI
 
 on:
+  # web/ is the static website, deployed by pages.yml; editing it must not
+  # rebuild and retest the library.
   push:
+    paths-ignore: [ 'web/**' ]
   pull_request:
+    paths-ignore: [ 'web/**' ]
 
 permissions:
   contents: read
