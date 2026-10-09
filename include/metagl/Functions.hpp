@@ -217,14 +217,14 @@ namespace metagl
     template<SpanCompatible T>
     inline void glBufferData(BufferTarget target, std::span<const T> data, BufferUsage usage)
     {
-        METAGL_API glBufferData(target, detail::checked_glsizeiptr(data.size_bytes()), data.data(), usage);
+        glBufferData(target, detail::checked_glsizeiptr(data.size_bytes()), data.data(), usage);
     }
     /// @brief Updates a sub-range of an existing buffer without reallocating (GL ES 2.0+)
     METAGL_API void glBufferSubData(BufferTarget target, GLintptr offset, GLsizeiptr size, const void * data);
     template<SpanCompatible T>
     inline void glBufferSubData(BufferTarget target, GLintptr offset, std::span<const T> data)
     {
-        METAGL_API glBufferSubData(target, offset, detail::checked_glsizeiptr(data.size_bytes()), data.data());
+        glBufferSubData(target, offset, detail::checked_glsizeiptr(data.size_bytes()), data.data());
     }
     /// @brief Copies a region from one buffer to another entirely on the GPU (GL ES 3.0+)
     METAGL_API void glCopyBufferSubData(BufferTarget readTarget, BufferTarget writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size);
@@ -326,43 +326,43 @@ namespace metagl
     METAGL_API void glDrawElements(PrimitiveType mode, GLsizei count, DataType type, const void * indices);
     inline void glDrawElements(PrimitiveType mode, GLsizei count, IndexType type, const void* indices)
     {
-        METAGL_API glDrawElements(mode, count, static_cast<DataType>(type), indices);
+        glDrawElements(mode, count, static_cast<DataType>(type), indices);
     }
     /// @brief Renders multiple instances using indexed drawing (GL ES 3.0+)
     METAGL_API void glDrawElementsInstanced(PrimitiveType mode, GLsizei count, DataType type, const void * indices, GLsizei instancecount);
     inline void glDrawElementsInstanced(PrimitiveType mode, GLsizei count, IndexType type, const void* indices, GLsizei instancecount)
     {
-        METAGL_API glDrawElementsInstanced(mode, count, static_cast<DataType>(type), indices, instancecount);
+        glDrawElementsInstanced(mode, count, static_cast<DataType>(type), indices, instancecount);
     }
     /// @brief Indexed draw with index range hints for driver prefetch optimization (GL ES 3.0+)
     METAGL_API void glDrawRangeElements(PrimitiveType mode, GLuint start, GLuint end, GLsizei count, DataType type, const void * indices);
     inline void glDrawRangeElements(PrimitiveType mode, GLuint start, GLuint end, GLsizei count, IndexType type, const void* indices)
     {
-        METAGL_API glDrawRangeElements(mode, start, end, count, static_cast<DataType>(type), indices);
+        glDrawRangeElements(mode, start, end, count, static_cast<DataType>(type), indices);
     }
     /// @brief Indexed draw with a constant base vertex offset added to each index (GL ES 3.2+)
     METAGL_API void glDrawElementsBaseVertex(PrimitiveType mode, GLsizei count, DataType type, const void * indices, GLint basevertex);
     inline void glDrawElementsBaseVertex(PrimitiveType mode, GLsizei count, IndexType type, const void* indices, GLint basevertex)
     {
-        METAGL_API glDrawElementsBaseVertex(mode, count, static_cast<DataType>(type), indices, basevertex);
+        glDrawElementsBaseVertex(mode, count, static_cast<DataType>(type), indices, basevertex);
     }
     /// @brief Instanced indexed draw with a base vertex offset (GL ES 3.2+)
     METAGL_API void glDrawElementsInstancedBaseVertex(PrimitiveType mode, GLsizei count, DataType type, const void * indices, GLsizei instancecount, GLint basevertex);
     inline void glDrawElementsInstancedBaseVertex(PrimitiveType mode, GLsizei count, IndexType type, const void* indices, GLsizei instancecount, GLint basevertex)
     {
-        METAGL_API glDrawElementsInstancedBaseVertex(mode, count, static_cast<DataType>(type), indices, instancecount, basevertex);
+        glDrawElementsInstancedBaseVertex(mode, count, static_cast<DataType>(type), indices, instancecount, basevertex);
     }
     /// @brief Range-indexed draw with a base vertex offset (GL ES 3.2+)
     METAGL_API void glDrawRangeElementsBaseVertex(PrimitiveType mode, GLuint start, GLuint end, GLsizei count, DataType type, const void * indices, GLint basevertex);
     inline void glDrawRangeElementsBaseVertex(PrimitiveType mode, GLuint start, GLuint end, GLsizei count, IndexType type, const void* indices, GLint basevertex)
     {
-        METAGL_API glDrawRangeElementsBaseVertex(mode, start, end, count, static_cast<DataType>(type), indices, basevertex);
+        glDrawRangeElementsBaseVertex(mode, start, end, count, static_cast<DataType>(type), indices, basevertex);
     }
     /// @brief Indexed instanced draw; parameters read from GL_DRAW_INDIRECT_BUFFER (GL ES 3.1+)
     METAGL_API void glDrawElementsIndirect(PrimitiveType mode, DataType type, const void * indirect);
     inline void glDrawElementsIndirect(PrimitiveType mode, IndexType type, const void* indirect)
     {
-        METAGL_API glDrawElementsIndirect(mode, static_cast<DataType>(type), indirect);
+        glDrawElementsIndirect(mode, static_cast<DataType>(type), indirect);
     }
     /// @brief Specifies the list of color buffers that fragment outputs are written to (GL ES 3.0+)
     METAGL_API void glDrawBuffers(GLsizei n, const DrawBuffer * bufs);
@@ -664,7 +664,7 @@ namespace metagl
     METAGL_API void glBindTexture(TextureTarget target, TextureId texture);
     inline void glBindTexture(TextureBindingTarget target, TextureId texture)
     {
-        METAGL_API glBindTexture(static_cast<TextureTarget>(target), texture);
+        glBindTexture(static_cast<TextureTarget>(target), texture);
     }
     /// @brief Selects the active texture unit for subsequent texture operations (GL ES 2.0+)
     METAGL_API void glActiveTexture(TextureUnit texture);
@@ -1157,15 +1157,15 @@ namespace metagl
 
         if constexpr (std::same_as<Value, GLfloat>)
         {
-            METAGL_API glUniform1f(location, value);
+            glUniform1f(location, value);
         }
         else if constexpr (std::same_as<Value, GLint>)
         {
-            METAGL_API glUniform1i(location, value);
+            glUniform1i(location, value);
         }
         else if constexpr (std::same_as<Value, GLuint>)
         {
-            METAGL_API glUniform1ui(location, value);
+            glUniform1ui(location, value);
         }
     }
 
@@ -1177,15 +1177,15 @@ namespace metagl
 
         if constexpr (std::same_as<Value, GLfloat>)
         {
-            METAGL_API glUniform2f(location, v0, v1);
+            glUniform2f(location, v0, v1);
         }
         else if constexpr (std::same_as<Value, GLint>)
         {
-            METAGL_API glUniform2i(location, v0, v1);
+            glUniform2i(location, v0, v1);
         }
         else if constexpr (std::same_as<Value, GLuint>)
         {
-            METAGL_API glUniform2ui(location, v0, v1);
+            glUniform2ui(location, v0, v1);
         }
     }
 
@@ -1197,15 +1197,15 @@ namespace metagl
 
         if constexpr (std::same_as<Value, GLfloat>)
         {
-            METAGL_API glUniform3f(location, v0, v1, v2);
+            glUniform3f(location, v0, v1, v2);
         }
         else if constexpr (std::same_as<Value, GLint>)
         {
-            METAGL_API glUniform3i(location, v0, v1, v2);
+            glUniform3i(location, v0, v1, v2);
         }
         else if constexpr (std::same_as<Value, GLuint>)
         {
-            METAGL_API glUniform3ui(location, v0, v1, v2);
+            glUniform3ui(location, v0, v1, v2);
         }
     }
 
@@ -1217,15 +1217,15 @@ namespace metagl
 
         if constexpr (std::same_as<Value, GLfloat>)
         {
-            METAGL_API glUniform4f(location, v0, v1, v2, v3);
+            glUniform4f(location, v0, v1, v2, v3);
         }
         else if constexpr (std::same_as<Value, GLint>)
         {
-            METAGL_API glUniform4i(location, v0, v1, v2, v3);
+            glUniform4i(location, v0, v1, v2, v3);
         }
         else if constexpr (std::same_as<Value, GLuint>)
         {
-            METAGL_API glUniform4ui(location, v0, v1, v2, v3);
+            glUniform4ui(location, v0, v1, v2, v3);
         }
     }
 
@@ -1319,15 +1319,15 @@ namespace metagl
 
         if constexpr (std::same_as<Value, GLfloat>)
         {
-            METAGL_API glProgramUniform1f(program, location, value);
+            glProgramUniform1f(program, location, value);
         }
         else if constexpr (std::same_as<Value, GLint>)
         {
-            METAGL_API glProgramUniform1i(program, location, value);
+            glProgramUniform1i(program, location, value);
         }
         else if constexpr (std::same_as<Value, GLuint>)
         {
-            METAGL_API glProgramUniform1ui(program, location, value);
+            glProgramUniform1ui(program, location, value);
         }
     }
 
@@ -1339,15 +1339,15 @@ namespace metagl
 
         if constexpr (std::same_as<Value, GLfloat>)
         {
-            METAGL_API glProgramUniform2f(program, location, v0, v1);
+            glProgramUniform2f(program, location, v0, v1);
         }
         else if constexpr (std::same_as<Value, GLint>)
         {
-            METAGL_API glProgramUniform2i(program, location, v0, v1);
+            glProgramUniform2i(program, location, v0, v1);
         }
         else if constexpr (std::same_as<Value, GLuint>)
         {
-            METAGL_API glProgramUniform2ui(program, location, v0, v1);
+            glProgramUniform2ui(program, location, v0, v1);
         }
     }
 
@@ -1359,15 +1359,15 @@ namespace metagl
 
         if constexpr (std::same_as<Value, GLfloat>)
         {
-            METAGL_API glProgramUniform3f(program, location, v0, v1, v2);
+            glProgramUniform3f(program, location, v0, v1, v2);
         }
         else if constexpr (std::same_as<Value, GLint>)
         {
-            METAGL_API glProgramUniform3i(program, location, v0, v1, v2);
+            glProgramUniform3i(program, location, v0, v1, v2);
         }
         else if constexpr (std::same_as<Value, GLuint>)
         {
-            METAGL_API glProgramUniform3ui(program, location, v0, v1, v2);
+            glProgramUniform3ui(program, location, v0, v1, v2);
         }
     }
 
@@ -1379,15 +1379,15 @@ namespace metagl
 
         if constexpr (std::same_as<Value, GLfloat>)
         {
-            METAGL_API glProgramUniform4f(program, location, v0, v1, v2, v3);
+            glProgramUniform4f(program, location, v0, v1, v2, v3);
         }
         else if constexpr (std::same_as<Value, GLint>)
         {
-            METAGL_API glProgramUniform4i(program, location, v0, v1, v2, v3);
+            glProgramUniform4i(program, location, v0, v1, v2, v3);
         }
         else if constexpr (std::same_as<Value, GLuint>)
         {
-            METAGL_API glProgramUniform4ui(program, location, v0, v1, v2, v3);
+            glProgramUniform4ui(program, location, v0, v1, v2, v3);
         }
     }
 
@@ -1544,19 +1544,19 @@ namespace metagl
     // #76 - scalar float vertex attribute dispatch.
     inline void glVertexAttrib(AttribLocation index, GLfloat x)
     {
-        METAGL_API glVertexAttrib1f(index, x);
+        glVertexAttrib1f(index, x);
     }
 
     // #77 - vec2 float vertex attribute dispatch.
     inline void glVertexAttrib(AttribLocation index, GLfloat x, GLfloat y)
     {
-        METAGL_API glVertexAttrib2f(index, x, y);
+        glVertexAttrib2f(index, x, y);
     }
 
     // #78 - vec3 float vertex attribute dispatch.
     inline void glVertexAttrib(AttribLocation index, GLfloat x, GLfloat y, GLfloat z)
     {
-        METAGL_API glVertexAttrib3f(index, x, y, z);
+        glVertexAttrib3f(index, x, y, z);
     }
 
     // #79/#84/#85 - vec4/ivec4/uvec4 vertex attribute dispatch.
@@ -1567,15 +1567,15 @@ namespace metagl
 
         if constexpr (std::same_as<Value, GLfloat>)
         {
-            METAGL_API glVertexAttrib4f(index, x, y, z, w);
+            glVertexAttrib4f(index, x, y, z, w);
         }
         else if constexpr (std::same_as<Value, GLint>)
         {
-            METAGL_API glVertexAttribI4i(index, x, y, z, w);
+            glVertexAttribI4i(index, x, y, z, w);
         }
         else if constexpr (std::same_as<Value, GLuint>)
         {
-            METAGL_API glVertexAttribI4ui(index, x, y, z, w);
+            glVertexAttribI4ui(index, x, y, z, w);
         }
     }
 
@@ -1596,12 +1596,12 @@ namespace metagl
         else if constexpr (std::same_as<Value, GLint>)
         {
             static_assert(Components == 4, "OpenGL ES only has glVertexAttribI4iv for integer constant attributes.");
-            METAGL_API glVertexAttribI4iv(index, values);
+            glVertexAttribI4iv(index, values);
         }
         else if constexpr (std::same_as<Value, GLuint>)
         {
             static_assert(Components == 4, "OpenGL ES only has glVertexAttribI4uiv for unsigned integer constant attributes.");
-            METAGL_API glVertexAttribI4uiv(index, values);
+            glVertexAttribI4uiv(index, values);
         }
     }
 
@@ -1735,21 +1735,21 @@ namespace metagl
     inline void glClearBuffer(
         FloatClearBuffer buffer, GLint drawbuffer, const T* value)
     {
-        METAGL_API glClearBufferfv(buffer, drawbuffer, value);
+        glClearBufferfv(buffer, drawbuffer, value);
     }
 
     template<std::same_as<GLint> T>
     inline void glClearBuffer(
         SignedIntegerClearBuffer buffer, GLint drawbuffer, const T* value)
     {
-        METAGL_API glClearBufferiv(buffer, drawbuffer, value);
+        glClearBufferiv(buffer, drawbuffer, value);
     }
 
     template<std::same_as<GLuint> T>
     inline void glClearBuffer(
         UnsignedIntegerClearBuffer buffer, GLint drawbuffer, const T* value)
     {
-        METAGL_API glClearBufferuiv(buffer, drawbuffer, value);
+        glClearBufferuiv(buffer, drawbuffer, value);
     }
 
     // #88-#91 - typed dispatch: glGetVertexAttrib<float/int/unsigned int>(index, pname, params)
@@ -1774,7 +1774,7 @@ namespace metagl
         GLsizei width, GLsizei height, GLint border,
         PixelFormat format, PixelType type, std::span<const T> pixels)
     {
-        METAGL_API glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels.data());
+        glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels.data());
     }
 
     template<SpanCompatible T>
@@ -1782,7 +1782,7 @@ namespace metagl
         GLsizei width, GLsizei height, GLsizei depth, GLint border,
         PixelFormat format, PixelType type, std::span<const T> pixels)
     {
-        METAGL_API glTexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels.data());
+        glTexImage3D(target, level, internalformat, width, height, depth, border, format, type, pixels.data());
     }
 
     template<SpanCompatible T>
@@ -1790,7 +1790,7 @@ namespace metagl
         GLint xoffset, GLint yoffset, GLsizei width, GLsizei height,
         PixelFormat format, PixelType type, std::span<const T> pixels)
     {
-        METAGL_API glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels.data());
+        glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels.data());
     }
 
     template<SpanCompatible T>
@@ -1799,7 +1799,7 @@ namespace metagl
         GLsizei width, GLsizei height, GLsizei depth,
         PixelFormat format, PixelType type, std::span<const T> pixels)
     {
-        METAGL_API glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels.data());
+        glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels.data());
     }
 
     // -------------------------------------------------------------------------
