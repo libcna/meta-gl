@@ -119,10 +119,19 @@ if(NOT EXISTS "${consumer_static_exe}" AND EXISTS "${consumer_build_static}/meta
     set(consumer_static_exe "${consumer_build_static}/meta-gl-package-consumer")
 endif()
 
-execute_process(
-    COMMAND "${consumer_static_exe}"
-    RESULT_VARIABLE run_static_result
-)
+# The consumer's BUILD_SHARED_LIBS does not change what was installed: when the package itself is
+# a shared meta-gl, this consumer links its DLL as well, and needs the same PATH (AM4-252).
+if(CMAKE_HOST_WIN32)
+    execute_process(
+        COMMAND "${CMAKE_COMMAND}" -E env "PATH=${metagl_install_bin};$ENV{PATH}" "${consumer_static_exe}"
+        RESULT_VARIABLE run_static_result
+    )
+else()
+    execute_process(
+        COMMAND "${consumer_static_exe}"
+        RESULT_VARIABLE run_static_result
+    )
+endif()
 if(NOT run_static_result EQUAL 0)
     message(FATAL_ERROR "Static-library consumer executable failed with exit code: ${run_static_result}")
 endif()
