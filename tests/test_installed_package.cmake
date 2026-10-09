@@ -57,10 +57,21 @@ if(NOT EXISTS "${consumer_exe}" AND EXISTS "${consumer_build}/meta-gl-package-co
     set(consumer_exe "${consumer_build}/meta-gl-package-consumer")
 endif()
 
-execute_process(
-    COMMAND "${consumer_exe}"
-    RESULT_VARIABLE run_result
-)
+# A shared meta-gl on Windows is the package's bin/meta-gl.dll, and Windows finds a DLL through
+# PATH or the executable's own directory -- there is no rpath. Run without it, the consumer died
+# with 0xc0000135 (DLL not found) on every shared Windows job (CNA plans/plan_apple_m4.md AM4-252).
+if(CMAKE_HOST_WIN32)
+    file(TO_NATIVE_PATH "${install_prefix}/bin" metagl_install_bin)
+    execute_process(
+        COMMAND "${CMAKE_COMMAND}" -E env "PATH=${metagl_install_bin};$ENV{PATH}" "${consumer_exe}"
+        RESULT_VARIABLE run_result
+    )
+else()
+    execute_process(
+        COMMAND "${consumer_exe}"
+        RESULT_VARIABLE run_result
+    )
+endif()
 if(NOT run_result EQUAL 0)
     message(FATAL_ERROR "Installed-package consumer executable failed with exit code: ${run_result}")
 endif()
