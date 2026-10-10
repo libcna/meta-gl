@@ -6,11 +6,18 @@
 # cache in Functions.cpp - stays local to the shared object. See
 # tests/test_export_symbols.py (metagl-export-symbols-test) for the
 # automated check that this script keeps holding.
+#
+# The pattern matches the mangled name, not the demangled one. A demangled
+# function template specialization starts with its return type, so
+# extern "C++" { metagl::*; } also matched libstdc++ instantiations that
+# return a metagl type, e.g. "metagl::ContextListener** std::copy<...>(...)".
+# An unoptimized build emits those out of line, and libstdc++ gives namespace
+# std default visibility, so they were exported. The mangled name of a
+# function in namespace metagl always begins with _ZN6metagl; a std:: one
+# begins with _ZSt or _ZNSt.
 {
   global:
-    extern "C++" {
-      metagl::*;
-    };
+    _ZN6metagl*;
   local:
     *;
 };
