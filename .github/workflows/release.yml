@@ -227,10 +227,13 @@ jobs:
         id: changelog
         run: |
           VERSION="${{ github.ref_name }}"
-          # Extract the section between this version header and the next one
-          # (or end of file).  Falls back to the full CHANGELOG if not found.
-          SECTION=$(awk -v ver="$VERSION" '
-            /^## \[/ { if (found) exit; if (index($0, ver)) found=1; next }
+          # Extract the section between this version header and the next
+          # level-2 header (or end of file).  The tag carries a leading "v"
+          # that the CHANGELOG headers ("## [0.1.0] — date") do not, so match
+          # on "[<version>]" exactly; matching the raw tag name never found a
+          # section.  Falls back to a pointer to CHANGELOG.md if not found.
+          SECTION=$(awk -v hdr="[${VERSION#v}]" '
+            /^## / { if (found) exit; if (index($0, hdr)) found=1; next }
             found { print }
           ' CHANGELOG.md)
           if [ -z "$SECTION" ]; then
