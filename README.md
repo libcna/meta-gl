@@ -32,6 +32,14 @@ The public API uses Khronos GLES scalar and function-pointer types. The
 required Khronos headers are vendored for source builds and installed with the
 package, so consumers do not need a separate GLES development-header package.
 
+## Version
+
+Current release: **0.4.0** (pre-1.0 — a minor release may change the public API; see
+`CHANGELOG.md` for what the release contains and `docs/releasing.md` for how versions are
+managed). Compiled code reads the version it was built against from
+`metagl::GetVersionString()` and the `METAGL_VERSION_*` macros in `<metagl/Version.hpp>`, a
+header the build generates from `CMakeLists.txt`.
+
 ## Build
 
 `meta-gl` is intended to be consumed as a CMake subdirectory dependency:
@@ -82,7 +90,7 @@ cmake --install build --prefix /path/to/prefix
 Consumers can then use:
 
 ```cmake
-find_package(meta-gl 0.3 CONFIG REQUIRED)
+find_package(meta-gl 0.4 CONFIG REQUIRED)
 target_link_libraries(my-target PRIVATE meta-gl::meta-gl)
 ```
 

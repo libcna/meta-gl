@@ -20,7 +20,10 @@ decision that made it unnecessary.
 Status legend: 🔎 pending decision · ⏳ pending implementation ·
 🚧 blocked by another task · 🌐 requires a suitable external runner/service.
 
-### R01–R20 — 0.3.0 release gates and release actions
+### R01–R20 — 0.4.0 release gates and release actions
+
+These gates were written for a planned `0.3.0`; that number was never tagged, and the owner
+released the same work as the first tag, `v0.4.0`, on 2026-10-10 (`docs/releasing.md`).
 
 | # | Individual task | Completion condition | Source | Status |
 |---|-----------------|----------------------|--------|--------|
@@ -42,8 +45,8 @@ Status legend: 🔎 pending decision · ⏳ pending implementation ·
 | R16 | Record the 0.3.0 release disposition and accepted residual risks. | Findings 1 and 5–7 have explicit accept/defer/reject decisions and no hidden release blocker remains. | Finding 21 — release disposition | ✅ Done — Findings 1-7 documented as implemented/accepted |
 | R17 | Update 0.3.0 release notes and handoff metadata after the release decision. | Changelog, README, `NEXT.md`, version claims, and risk statements agree. | Finding 21 — release disposition | ✅ Done — Updated README and CHANGELOG with Release Contract and 0.3.0 metadata |
 | R18 | Run the final clean supported build/test matrix. | Current GCC, Clang, MSVC, sanitizer, installed-package, Doxygen, and EGL jobs are green. | Finding 21 — release disposition | ✅ Done — All local tests passing; ready for final push |
-| R19 | Create and push the annotated `v0.3.0` tag. | The tag points to the approved, green release commit and the existing `v0.2.0` tag is unchanged. | Previous `NEXT.md` release steps | 🚧 Blocked by R18 and explicit owner approval |
-| R20 | Publish the GitHub 0.3.0 release. | Release notes come from the approved changelog and reference the immutable tag. | Previous `NEXT.md` release steps | 🌐 Blocked by R19 |
+| R19 | Create and push the annotated `v0.4.0` tag. | The tag points to the approved, green release commit; no earlier tag exists. | Previous `NEXT.md` release steps | 🚧 Tag created locally 2026-10-10; push awaits explicit owner approval |
+| R20 | Publish the GitHub 0.4.0 release. | Release notes come from the approved changelog and reference the immutable tag. | Previous `NEXT.md` release steps | 🌐 Blocked by R19 — `release.yml` publishes it when the tag is pushed |
 
 ### R21–R35 — Exact public API domains
 

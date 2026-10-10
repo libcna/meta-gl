@@ -29,12 +29,15 @@ identifiers only; ownership belongs in `easy-gl`.
 
 ## 2. Release status
 
-Version **0.3.0** metadata was prepared by the earlier audit, and the current
-follow-up branch is **approaching release-ready state**:
+**0.4.0** (2026-10-10) is the first tagged release. The work prepared here as
+`0.3.0` was never tagged, nor were the earlier milestones; it ships as `v0.4.0`.
+`docs/releasing.md` explains the version mechanism and the release checklist.
 
-- `project(meta-gl VERSION 0.3.0)` drives the CMake package version and library
-  `VERSION`/`SOVERSION` metadata.
-- `CHANGELOG.md` contains a dated `0.3.0` section.
+- `project(meta-gl VERSION 0.4.0)` plus `METAGL_VERSION_PRERELEASE` drive the
+  generated `metagl/Version.hpp`, the CMake package version and the library
+  `VERSION` metadata; `SOVERSION` stays `0` (R04).
+- `CHANGELOG.md` contains the dated `0.4.0` section above the untagged
+  0.1.0–0.3.0 milestone entries.
 - The original 113 plan tasks are complete.
 - Follow-up findings L1–L4 are implemented and locally verified.
 - `plan.md` reflects **166 completed tasks** and **26 remaining** (mostly long-term).
@@ -54,7 +57,8 @@ follow-up branch is **approaching release-ready state**:
 - The API verifier reports consistency across 358 wrappers and mandatory GLES sets.
 - The current feature worktree passes all 5 tests (including new thread tests) on Linux (GCC/Clang) and local verification.
 
-Do not tag 0.3.0 until the owner explicitly approves the final release commit R19.
+The annotated `v0.4.0` tag exists locally; push it (R19) only with the owner's
+explicit approval — pushing it publishes the GitHub release through `release.yml` (R20).
 
 ---
 
@@ -184,7 +188,7 @@ legacy draw-index, active-attribute, and raw `glCopyImageSubData` call forms.
   (`metagl::detail::GetDesktopEsTier()`, R76–R78); it never affects
   `Capabilities` or `Initialize()`'s success/failure, by design.
 
-R47 (exported-symbol policy test) is complete; R19 is the final approval step for 0.3.0 release.
+R47 (exported-symbol policy test) is complete; R19 (pushing the `v0.4.0` tag) is the final approval step for the release.
 
 ---
 
@@ -193,10 +197,9 @@ R47 (exported-symbol policy test) is complete; R19 is the final approval step fo
 `plan.md` is the single task backlog; do not create additional implicit TODO
 lists in this document.
 
-1. Resolve the 0.3.0 release gates R01–R18, starting with the owner decisions
-   R01, R04, and R07.
+1. The release gates R01–R18 are resolved; 0.4.0 is tagged locally.
 2. Only after a green approved release commit, perform R19–R20 (tag and GitHub
-   release). Never move or recreate the existing `v0.2.0` tag.
+   release). Never move or recreate a pushed release tag.
 3. Review the exact API-domain work R21–R35 for the next compatible feature
    release.
 4. Resolve platform, ABI, context, listener, and debug contracts in R36–R59.
