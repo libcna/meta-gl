@@ -1,9 +1,14 @@
 #include <metagl/metagl.hpp>
 #include <iostream>
 #include <csignal>
+#include <cstdint>
 #include <cstdlib>
+#include <cstring>
+#include <string>
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <process.h>
+#else
 #include <unistd.h>
 #include <sys/wait.h>
 #endif
@@ -23,10 +28,36 @@ void* dummy_loader(const char*) {
     return (void*)+noop; // Convert lambda to function pointer
 }
 
-bool expect_terminate(void (*func)()) {
 #ifdef _WIN32
-    return false; 
+// MSVC's std::terminate() ends in abort(), whose exit code depends on the CRT
+// build and on WER (3, or 0xC0000409 via __fastfail). The child turns SIGABRT
+// into one fixed exit code so the parent can tell "terminated" from "returned".
+constexpr int kTerminatedExitCode = 134;
+
+extern "C" void exit_on_abort(int) {
+    std::_Exit(kTerminatedExitCode);
+}
+#endif
+
+// Runs func in a child process and reports whether the child was terminated.
+// POSIX forks; Windows has no fork, so it re-runs this executable with
+// "--child <name>" and main() dispatches to func there.
+bool expect_terminate(const char* name, void (*func)()) {
+#ifdef _WIN32
+    (void)func;
+    char* self = nullptr;
+    if (_get_pgmptr(&self) != 0 || self == nullptr) {
+        return false;
+    }
+    // _spawnv does not quote arguments; quote argv[0] so a path with spaces
+    // does not shift the child's argv.
+    const std::string quoted_self = std::string("\"") + self + "\"";
+    const char* args[] = {quoted_self.c_str(), "--child", name, nullptr};
+    const std::intptr_t status = _spawnv(_P_WAIT, self, args);
+    std::cout << " (exit code " << status << ") ";
+    return status == kTerminatedExitCode;
 #else
+    (void)name;
     pid_t pid = fork();
     if (pid == 0) {
         // Ensure initialized for Debug builds to avoid assert(initialized) failing first
@@ -65,30 +96,50 @@ void test_invalid_element_count() {
     glUniform<4>(UniformLocation{0}, std::span<const float>{data, 3});
 }
 
-int main() {
+struct ContractCase {
+    const char* name;
+    void (*func)();
+};
+
+constexpr ContractCase kCases[] = {
+    {"test_overflow_glsizei", test_overflow_glsizei},
+    {"test_invalid_transpose", test_invalid_transpose},
+    {"test_invalid_element_count", test_invalid_element_count},
+};
+
+int main(int argc, char** argv) {
+#ifdef _WIN32
+    if (argc == 3 && std::strcmp(argv[1], "--child") == 0) {
+#ifdef _MSC_VER
+        // Keep abort() from popping a dialog or fast-failing past the handler.
+        _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
+#endif
+        std::signal(SIGABRT, exit_on_abort);
+        for (const ContractCase& c : kCases) {
+            if (std::strcmp(argv[2], c.name) == 0) {
+                Initialize(dummy_loader);
+                c.func();
+                return 0;
+            }
+        }
+        return 2;
+    }
+#else
+    (void)argc;
+    (void)argv;
+#endif
+
     int failed = 0;
 
     std::cout << "Running Release-contract tests (R10)..." << std::endl;
 
-    if (expect_terminate(test_overflow_glsizei)) {
-        std::cout << "PASS: test_overflow_glsizei terminated as expected." << std::endl;
-    } else {
-        std::cerr << "FAIL: test_overflow_glsizei did NOT terminate." << std::endl;
-        failed++;
-    }
-
-    if (expect_terminate(test_invalid_transpose)) {
-        std::cout << "PASS: test_invalid_transpose terminated as expected." << std::endl;
-    } else {
-        std::cerr << "FAIL: test_invalid_transpose did NOT terminate." << std::endl;
-        failed++;
-    }
-
-    if (expect_terminate(test_invalid_element_count)) {
-        std::cout << "PASS: test_invalid_element_count terminated as expected." << std::endl;
-    } else {
-        std::cerr << "FAIL: test_invalid_element_count did NOT terminate." << std::endl;
-        failed++;
+    for (const ContractCase& c : kCases) {
+        if (expect_terminate(c.name, c.func)) {
+            std::cout << "PASS: " << c.name << " terminated as expected." << std::endl;
+        } else {
+            std::cerr << "FAIL: " << c.name << " did NOT terminate." << std::endl;
+            failed++;
+        }
     }
 
     if (failed == 0) {
