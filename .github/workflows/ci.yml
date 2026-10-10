@@ -88,6 +88,33 @@ jobs:
         timeout-minutes: 4
         run: ctest --test-dir build -C Debug --output-on-failure --timeout 120 -R '^metagl-mock-loader-test$'
 
+      - name: Test release contract
+        timeout-minutes: 4
+        run: ctest --test-dir build -C Debug --output-on-failure --timeout 120 -R '^metagl-release-contract-test$'
+
+      - name: Test thread-local context state
+        timeout-minutes: 4
+        run: ctest --test-dir build -C Debug --output-on-failure --timeout 120 -R '^metagl-thread-test$'
+
+      - name: Test desktop ES tier
+        timeout-minutes: 4
+        run: ctest --test-dir build -C Debug --output-on-failure --timeout 120 -R '^metagl-desktop-tier-test$'
+
+      - name: Test version
+        timeout-minutes: 4
+        run: ctest --test-dir build -C Debug --output-on-failure --timeout 120 -R '^metagl-version-test$'
+
+      # Registered only for a shared library on Linux (tests/CMakeLists.txt).
+      - name: Test SONAME
+        if: runner.os == 'Linux' && matrix.shared == 'ON'
+        timeout-minutes: 4
+        run: ctest --test-dir build -C Debug --output-on-failure --timeout 120 -R '^metagl-soname-test$'
+
+      - name: Test exported symbols
+        if: runner.os == 'Linux' && matrix.shared == 'ON'
+        timeout-minutes: 4
+        run: ctest --test-dir build -C Debug --output-on-failure --timeout 120 -R '^metagl-export-symbols-test$'
+
       - name: Test API consistency
         timeout-minutes: 4
         run: ctest --test-dir build -C Debug --output-on-failure --timeout 120 -R '^metagl-api-consistency-test$'
