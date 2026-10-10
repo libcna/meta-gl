@@ -34,7 +34,7 @@ package, so consumers do not need a separate GLES development-header package.
 
 ## Version
 
-Current release: **0.4.0** (pre-1.0 — a minor release may change the public API; see
+Current release: **0.4.1** (pre-1.0 — a minor release may change the public API; see
 `CHANGELOG.md` for what the release contains and `docs/releasing.md` for how versions are
 managed). Compiled code reads the version it was built against from
 `metagl::GetVersionString()` and the `METAGL_VERSION_*` macros in `<metagl/Version.hpp>`, a

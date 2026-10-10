@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 project(meta-gl
-    VERSION 0.4.0
+    VERSION 0.4.1
     DESCRIPTION "Low-level type-safe C++ wrapper over OpenGL function pointers"
     LANGUAGES CXX)
 

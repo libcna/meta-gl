@@ -9,6 +9,37 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). While the
 
 ## [Unreleased]
 
+## [0.4.1] — 2026-10-10
+
+### Fixed
+- An unoptimized shared Linux build of `libmeta-gl.so` (Debug, or no `CMAKE_BUILD_TYPE`)
+  exported fourteen weak libstdc++ template instantiations, such as `std::copy` and
+  `std::__niter_base` over `std::vector<metagl::ContextListener*>`, alongside the `metagl::`
+  API. The version script `cmake/metagl.version` exported `extern "C++" { metagl::*; }`, which
+  the linker matches against demangled names, and a demangled function template specialization
+  starts with its return type, so `metagl::ContextListener** std::copy<...>(...)` matched. It
+  now matches the mangled prefix `_ZN6metagl`, which every function in namespace `metagl` has
+  and no `std::` symbol does. An optimized build never emitted these instantiations, so its
+  exports, and those of the 0.4.0 packages, are unchanged at 394 symbols.
+
+### Changed
+- CI runs all eleven registered CTest tests instead of five: the release-contract, thread,
+  desktop-tier and version tests on every leg, and the SONAME and exported-symbol tests on the
+  Linux shared leg. Until now they ran only in the tag-triggered release workflow, so a failure
+  in one of them, like the leak above, first showed up when a version tag was pushed.
+
+### Verification
+- 11/11 CTest tests pass on a shared Release build with tests, examples, GPU (EGL surfaceless)
+  tests and docs enabled, including API consistency (358 wrappers). The build is
+  warning-free.
+- The exported-symbol policy test passes on an unoptimized Clang shared build as well: 394
+  exports, the same as Release. Before the fix it failed there with the fourteen `std::`
+  symbols. CI passes every test on Linux GCC static, Linux Clang shared, Windows MSVC shared and
+  Linux Clang ASan/UBSan.
+- Verified on Debian GNU/Linux 13 with GCC 14.2.0, Clang 19.1.7, CMake 3.31.6, Ninja and Mesa
+  EGL 25.0.7. The Khronos GLES headers are vendored in `third_party/Khronos`, so the tag selects
+  them; the EGL implementation is a system package used only by the optional GPU smoke test.
+
 ## [0.4.0] — 2026-10-10
 
 First tagged release. The 0.1.0, 0.2.0 and 0.3.0 entries below were recorded as development
@@ -256,5 +287,6 @@ contains everything listed under them as well. See [`docs/releasing.md`](docs/re
   vertex arrays, draw calls, and render state.
 - CMake target `meta-gl` with alias `meta-gl::meta-gl`, static library.
 
-[Unreleased]: https://github.com/libcna/meta-gl/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/libcna/meta-gl/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/libcna/meta-gl/releases/tag/v0.4.1
 [0.4.0]: https://github.com/libcna/meta-gl/releases/tag/v0.4.0
