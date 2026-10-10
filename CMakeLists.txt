@@ -5,6 +5,23 @@ project(meta-gl
     DESCRIPTION "Low-level type-safe C++ wrapper over OpenGL function pointers"
     LANGUAGES CXX)
 
+# --- Release identity (docs/releasing.md) --------------------------------------------------
+# project(VERSION) accepts numeric components only, so the Semantic Versioning pre-release
+# identifier lives beside it and is joined back on here. Deliberately a normal variable and not
+# a cache entry: the version identifies the release, it is not a per-build knob, and a cached
+# copy would keep an already-configured build directory reporting the previous release after a
+# bump. METAGL_VERSION_STRING is the single spelling the rest of the build reads -- the
+# generated metagl/Version.hpp, the Doxygen PROJECT_NUMBER, the configure banner. Do not
+# re-derive it elsewhere.
+set(METAGL_VERSION_PRERELEASE "")
+if(METAGL_VERSION_PRERELEASE)
+    set(METAGL_VERSION_STRING "${PROJECT_VERSION}-${METAGL_VERSION_PRERELEASE}")
+else()
+    set(METAGL_VERSION_STRING "${PROJECT_VERSION}")
+endif()
+message(STATUS "meta-gl: version ${METAGL_VERSION_STRING}")
+include(cmake/Version.cmake)
+
 # Keep conventional BUILD_SHARED_LIBS behavior without forcing a cache option
 # into parent projects that consume meta-gl via add_subdirectory().
 if(PROJECT_IS_TOP_LEVEL AND NOT DEFINED BUILD_SHARED_LIBS)
@@ -96,6 +113,7 @@ target_sources(meta-gl
     BASE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/include"
     FILES
         "${CMAKE_CURRENT_BINARY_DIR}/include/metagl/Export.hpp"
+        "${CMAKE_CURRENT_BINARY_DIR}/include/metagl/Version.hpp"
 )
 
 target_include_directories(meta-gl

@@ -50,6 +50,18 @@ metagl_apply_warnings(metagl-desktop-tier-tests)
 metagl_stage_runtime(metagl-desktop-tier-tests)
 add_test(NAME metagl-desktop-tier-test COMMAND metagl-desktop-tier-tests)
 
+add_executable(metagl-version-tests
+    test_version.cpp
+)
+target_link_libraries(metagl-version-tests PRIVATE meta-gl::meta-gl)
+target_compile_features(metagl-version-tests PRIVATE cxx_std_23)
+target_compile_definitions(metagl-version-tests PRIVATE
+    METAGL_TEST_EXPECTED_VERSION="${METAGL_VERSION_STRING}")
+set_target_properties(metagl-version-tests PROPERTIES CXX_EXTENSIONS NO)
+metagl_apply_warnings(metagl-version-tests)
+metagl_stage_runtime(metagl-version-tests)
+add_test(NAME metagl-version-test COMMAND metagl-version-tests)
+
 if(UNIX AND BUILD_SHARED_LIBS AND NOT APPLE)
     find_program(READELF_EXE readelf)
     find_program(NM_EXE nm)
