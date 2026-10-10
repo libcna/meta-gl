@@ -199,10 +199,15 @@ jobs:
         if: runner.os != 'Windows'
         run: ./consumer-build/meta-gl-package-consumer
 
+      # The archive's meta-gl.dll is in bin/, and Windows finds a DLL only
+      # through PATH or the executable's own directory -- there is no rpath.
+      # Run without it, the consumer dies with 0xc0000135 (DLL not found).
       - name: Run consumer (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: .\consumer-build\Release\meta-gl-package-consumer.exe
+        run: |
+          $env:PATH = "${{ github.workspace }}\install\bin;$env:PATH"
+          .\consumer-build\Release\meta-gl-package-consumer.exe
 
   # ------------------------------------------------------------------ #
   # 3. Create the GitHub release and attach validated artifacts          #
