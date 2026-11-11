@@ -1134,7 +1134,10 @@ namespace metagl
         DepthType           = GL_TEXTURE_DEPTH_TYPE,
         Compressed          = GL_TEXTURE_COMPRESSED,
         Samples             = GL_TEXTURE_SAMPLES,                 ///< multisample textures (ES 3.2 §8.11.3). ES 3.1+
-        FixedSampleLocations = GL_TEXTURE_FIXED_SAMPLE_LOCATIONS  ///< multisample textures (ES 3.2 §8.11.3). ES 3.1+
+        FixedSampleLocations = GL_TEXTURE_FIXED_SAMPLE_LOCATIONS, ///< multisample textures (ES 3.2 §8.11.3). ES 3.1+
+        BufferDataStoreBinding = GL_TEXTURE_BUFFER_DATA_STORE_BINDING, ///< buffer textures (ES 3.2 Table 21.11). ES 3.2+
+        BufferOffset        = GL_TEXTURE_BUFFER_OFFSET,           ///< buffer textures (ES 3.2 Table 21.11). ES 3.2+
+        BufferSize          = GL_TEXTURE_BUFFER_SIZE              ///< buffer textures (ES 3.2 Table 21.11). ES 3.2+
     };
 
     /**

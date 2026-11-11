@@ -897,6 +897,9 @@ namespace metagl
         else if (v == TextureLevelParameter::Compressed) return "Compressed";
         else if (v == TextureLevelParameter::Samples) return "Samples";
         else if (v == TextureLevelParameter::FixedSampleLocations) return "FixedSampleLocations";
+        else if (v == TextureLevelParameter::BufferDataStoreBinding) return "BufferDataStoreBinding";
+        else if (v == TextureLevelParameter::BufferOffset) return "BufferOffset";
+        else if (v == TextureLevelParameter::BufferSize) return "BufferSize";
         return "?";
     }
 
