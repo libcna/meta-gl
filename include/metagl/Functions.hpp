@@ -27,8 +27,14 @@
  *
  * This library enforces valid inputs even in Release builds. If a function is
  * called with invalid arguments that violate its contract (e.g. `size_t`
- * overflow, incomplete matrix data, or unsupported bitfields), the program
- * will be immediately terminated via `std::terminate()`.
+ * overflow, incomplete matrix data, an uninitialized context or a missing
+ * entry point), the program will be immediately terminated via
+ * `std::terminate()`.
+ *
+ * Bitfield arguments (`ClearBufferBit`, `MapBufferAccessBit`, barrier bits, ...)
+ * are not validated by meta-gl: they are forwarded unchanged, and a bit that is
+ * invalid for the command is reported by the driver as a normal GL error
+ * (INVALID_VALUE), as the OpenGL ES specification defines.
  */
 #pragma once
 

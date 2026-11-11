@@ -99,12 +99,13 @@ version because a minor bump may contain breaking API changes.
 
 ### Invalid Input Contract
 
-`meta-gl` enforces valid inputs even in **Release** builds to prevent undefined behavior from reaching the OpenGL driver. If a function is called with arguments that violate its contract (e.g. `size_t` overflow when converting to `GLsizei`, incomplete matrix data, or unsupported bitfields), the program will be immediately terminated via `std::terminate()`.
+`meta-gl` enforces valid inputs even in **Release** builds to prevent undefined behavior from reaching the OpenGL driver. If a function is called with arguments that violate its contract (e.g. `size_t` overflow when converting to `GLsizei`, incomplete matrix data, an uninitialized context or a missing entry point), the program will be immediately terminated via `std::terminate()`.
 
 This policy ensures that:
 - Overflows never reach raw GL calls.
 - Divisibility requirements for vectors and matrices are strictly enforced.
-- Invalid bitfield combinations or unsupported parameters are caught early.
+
+Bitfield arguments are not validated by meta-gl: they are forwarded unchanged, and a bit that is invalid for the command is reported by the driver as a normal GL error (`INVALID_VALUE`), as the OpenGL ES specification defines.
 
 ### Tests and documentation
 
