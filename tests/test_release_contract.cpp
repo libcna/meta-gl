@@ -1,3 +1,4 @@
+#include <span>
 #include <metagl/metagl.hpp>
 #include <iostream>
 #include <csignal>
@@ -85,9 +86,11 @@ void test_overflow_glsizei() {
     glGenBuffers(huge, nullptr);
 }
 
-void test_invalid_transpose() {
-    float matrix[16] = {0};
-    glUniformMatrix4fv(UniformLocation{0}, 1, GL_TRUE, matrix);
+// A partial matrix (15 floats for a mat4) violates the element-count contract of the helper.
+// (transpose == GL_TRUE is NOT a contract violation: ES 3.0+ accepts row-major uploads.)
+void test_invalid_matrix_count() {
+    float data[15] = {0};
+    glUniformMatrix<4>(UniformLocation{0}, std::span<const float>{data, 15});
 }
 
 void test_invalid_element_count() {
@@ -103,7 +106,7 @@ struct ContractCase {
 
 constexpr ContractCase kCases[] = {
     {"test_overflow_glsizei", test_overflow_glsizei},
-    {"test_invalid_transpose", test_invalid_transpose},
+    {"test_invalid_matrix_count", test_invalid_matrix_count},
     {"test_invalid_element_count", test_invalid_element_count},
 };
 

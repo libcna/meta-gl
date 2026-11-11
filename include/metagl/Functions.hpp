@@ -79,13 +79,12 @@ namespace metagl
 
         [[nodiscard]] inline GLsizei checked_matrix_count(
             std::size_t size, std::size_t elements_per_matrix,
-            GLboolean transpose)
+            GLboolean /*transpose*/)
         {
-            // OpenGL ES requires GL_FALSE. The portable convenience API keeps
-            // that rule even when the active context happens to be desktop GL.
-            if (transpose != GL_FALSE) {
-                std::terminate();
-            }
+            // transpose is passed through unchanged: OpenGL ES 3.0+ accepts GL_TRUE (row-major data,
+            // ES 3.0 §2.12.6.1 / ES 3.2 §7.6.1); only ES 2.0 requires GL_FALSE, and there the driver
+            // reports INVALID_VALUE as a normal GL error. (Earlier versions of this helper terminated on
+            // GL_TRUE, enforcing the ES 2.0 rule on every context.)
             return checked_element_count(size, elements_per_matrix);
         }
     }
