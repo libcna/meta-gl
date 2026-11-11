@@ -4194,6 +4194,13 @@ namespace metagl
         METAGL_DEBUG_LOG_VOID("glGetFramebufferAttachmentParameteriv", target, attachment, pname, params);
     }
 
+    void glGetFramebufferAttachmentParameteriv(FramebufferTarget target, DefaultFramebufferQueryAttachment attachment, FramebufferAttachmentParameter pname, GLint * params)
+    {
+        if (!(detail::g_gl.initialized && detail::g_gl.GetFramebufferAttachmentParameteriv != nullptr)) std::terminate();
+        detail::g_gl.GetFramebufferAttachmentParameteriv(detail::to_gl_enum(target), detail::to_gl_enum(attachment), detail::to_gl_enum(pname), params);
+        METAGL_DEBUG_LOG_VOID("glGetFramebufferAttachmentParameteriv", target, attachment, pname, params);
+    }
+
     // #299
     void glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, ClearBufferBit mask, BlitFilter filter)
     {

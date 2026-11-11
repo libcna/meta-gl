@@ -825,6 +825,8 @@ namespace metagl
     METAGL_API void glGetFramebufferParameteriv(FramebufferTarget target, FramebufferDefaultParameter pname, GLint * params);
     /// @brief Returns parameters of a specific framebuffer attachment (GL ES 2.0+)
     METAGL_API void glGetFramebufferAttachmentParameteriv(FramebufferTarget target, FramebufferAttachment attachment, FramebufferAttachmentParameter pname, GLint * params);
+    /// @brief Queries a default-framebuffer buffer (BACK/DEPTH/STENCIL) while framebuffer 0 is bound to target (GL ES 3.0+, §6.1.13)
+    METAGL_API void glGetFramebufferAttachmentParameteriv(FramebufferTarget target, DefaultFramebufferQueryAttachment attachment, FramebufferAttachmentParameter pname, GLint * params);
     /// @brief Copies a rectangle between framebuffers; also resolves MSAA (GL ES 3.0+)
     METAGL_API void glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, ClearBufferBit mask, BlitFilter filter);
     /// @brief Hints that attachment contents are no longer needed (bandwidth optimization) (GL ES 3.0+)

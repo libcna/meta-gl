@@ -239,6 +239,8 @@ int main()
     check("BlendEquation::FuncAdd",                      to_string(BlendEquation::FuncAdd));
     check("BufferTarget::Array",                         to_string(BufferTarget::Array));
     check("BufferTarget::TextureBuffer",                 to_string(BufferTarget::TextureBuffer));
+    check("DefaultFramebufferAttachment::Color",         to_string(DefaultFramebufferAttachment::Color));
+    check("DefaultFramebufferQueryAttachment::Back",     to_string(DefaultFramebufferQueryAttachment::Back));
     check("BufferUsage::StaticDraw",                     to_string(BufferUsage::StaticDraw));
     check("BufferParameter::Size",                       to_string(BufferParameter::Size));
     check("BufferPointerParameter::MapPointer",          to_string(BufferPointerParameter::MapPointer));

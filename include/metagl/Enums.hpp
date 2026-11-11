@@ -1273,6 +1273,20 @@ namespace metagl
     };
 
     /**
+     * @brief Default-framebuffer buffers for glGetFramebufferAttachmentParameteriv.
+     *
+     * When the default framebuffer (name 0) is bound to the queried target, the attachment
+     * must be BACK, DEPTH or STENCIL (ES 3.0 §6.1.13, ES 3.2 §9.2.3). This differs from both
+     * the framebuffer-object attachment points and the GL_COLOR token used for invalidation.
+     */
+    enum class DefaultFramebufferQueryAttachment : GLenum
+    {
+        Back    = GL_BACK,
+        Depth   = GL_DEPTH,
+        Stencil = GL_STENCIL
+    };
+
+    /**
      * @brief Framebuffer attachment points. Color attachments are represented by ColorAttachment; use to_framebuffer_attachment() to convert.
      */
     enum class FramebufferAttachment : GLenum

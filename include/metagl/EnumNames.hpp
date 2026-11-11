@@ -1044,6 +1044,24 @@ namespace metagl
         return "?";
     }
 
+    /// @brief Returns the enumerator name of a @ref DefaultFramebufferAttachment value, or `"?"` for unknown values.
+    inline std::string_view to_string(DefaultFramebufferAttachment v)
+    {
+        if (v == DefaultFramebufferAttachment::Color) return "Color";
+        else if (v == DefaultFramebufferAttachment::Depth) return "Depth";
+        else if (v == DefaultFramebufferAttachment::Stencil) return "Stencil";
+        return "?";
+    }
+
+    /// @brief Returns the enumerator name of a @ref DefaultFramebufferQueryAttachment value, or `"?"` for unknown values.
+    inline std::string_view to_string(DefaultFramebufferQueryAttachment v)
+    {
+        if (v == DefaultFramebufferQueryAttachment::Back) return "Back";
+        else if (v == DefaultFramebufferQueryAttachment::Depth) return "Depth";
+        else if (v == DefaultFramebufferQueryAttachment::Stencil) return "Stencil";
+        return "?";
+    }
+
     /// @brief Returns the enumerator name of a @ref FramebufferStatus value, or `"?"` for unknown values.
     inline std::string_view to_string(FramebufferStatus v)
     {
