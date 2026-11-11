@@ -122,6 +122,7 @@ namespace metagl
         else if (v == BufferTarget::DispatchIndirect) return "DispatchIndirect";
         else if (v == BufferTarget::ShaderStorage) return "ShaderStorage";
         else if (v == BufferTarget::AtomicCounter) return "AtomicCounter";
+        else if (v == BufferTarget::TextureBuffer) return "TextureBuffer";
         return "?";
     }
 
@@ -1630,6 +1631,30 @@ namespace metagl
         if (v == GetParameter::ImageBindingAccess) return "ImageBindingAccess";
         if (v == GetParameter::ImageBindingFormat) return "ImageBindingFormat";
         if (v == GetParameter::PrimitiveBoundingBox) return "PrimitiveBoundingBox";
+        if (v == GetParameter::PackAlignment) return "PackAlignment";
+        if (v == GetParameter::PackRowLength) return "PackRowLength";
+        if (v == GetParameter::PackSkipRows) return "PackSkipRows";
+        if (v == GetParameter::PackSkipPixels) return "PackSkipPixels";
+        if (v == GetParameter::UnpackAlignment) return "UnpackAlignment";
+        if (v == GetParameter::UnpackRowLength) return "UnpackRowLength";
+        if (v == GetParameter::UnpackImageHeight) return "UnpackImageHeight";
+        if (v == GetParameter::UnpackSkipRows) return "UnpackSkipRows";
+        if (v == GetParameter::UnpackSkipPixels) return "UnpackSkipPixels";
+        if (v == GetParameter::UnpackSkipImages) return "UnpackSkipImages";
+        if (v == GetParameter::GenerateMipmapHint) return "GenerateMipmapHint";
+        if (v == GetParameter::FragmentShaderDerivativeHint) return "FragmentShaderDerivativeHint";
+        if (v == GetParameter::Blend) return "Blend";
+        if (v == GetParameter::CullFace) return "CullFace";
+        if (v == GetParameter::DepthTest) return "DepthTest";
+        if (v == GetParameter::Dither) return "Dither";
+        if (v == GetParameter::PolygonOffsetFill) return "PolygonOffsetFill";
+        if (v == GetParameter::ScissorTest) return "ScissorTest";
+        if (v == GetParameter::StencilTest) return "StencilTest";
+        if (v == GetParameter::SampleAlphaToCoverage) return "SampleAlphaToCoverage";
+        if (v == GetParameter::SampleCoverage) return "SampleCoverage";
+        if (v == GetParameter::RasterizerDiscard) return "RasterizerDiscard";
+        if (v == GetParameter::TextureBufferBinding) return "TextureBufferBinding";
+        if (v == GetParameter::TextureBufferOffsetAlignment) return "TextureBufferOffsetAlignment";
         return "?";
     }
 

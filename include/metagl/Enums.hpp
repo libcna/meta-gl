@@ -164,7 +164,8 @@ namespace metagl
         DrawIndirect     = GL_DRAW_INDIRECT_BUFFER,       ///< Indirect draw parameters. ES 3.1+
         DispatchIndirect = GL_DISPATCH_INDIRECT_BUFFER,   ///< Indirect dispatch parameters. ES 3.1+
         ShaderStorage    = GL_SHADER_STORAGE_BUFFER,      ///< Shader storage block data. ES 3.1+
-        AtomicCounter    = GL_ATOMIC_COUNTER_BUFFER       ///< Atomic counter data. ES 3.1+
+        AtomicCounter    = GL_ATOMIC_COUNTER_BUFFER,      ///< Atomic counter data. ES 3.1+
+        TextureBuffer    = GL_TEXTURE_BUFFER              ///< Buffer texture data store (ES 3.2 Table 6.1). ES 3.2+
     };
 
     /**
@@ -1969,7 +1970,33 @@ namespace metagl
         ImageBindingLayer       = GL_IMAGE_BINDING_LAYER,
         ImageBindingAccess      = GL_IMAGE_BINDING_ACCESS,
         ImageBindingFormat      = GL_IMAGE_BINDING_FORMAT,
-        PrimitiveBoundingBox    = GL_PRIMITIVE_BOUNDING_BOX    ///< ES 3.2+
+        PrimitiveBoundingBox    = GL_PRIMITIVE_BOUNDING_BOX,   ///< ES 3.2+
+        // Pixel-store, hint, enable and texture-buffer state that glGet* accepts (added for
+        // opengles3-demos: these pnames were not representable before).
+        PackAlignment                = GL_PACK_ALIGNMENT,  ///< glPixelStorei state (ES 3.0 Table 6.x, ES 3.2 Table 21.x)
+        PackRowLength                = GL_PACK_ROW_LENGTH,  ///< ES 3.0+
+        PackSkipRows                 = GL_PACK_SKIP_ROWS,  ///< ES 3.0+
+        PackSkipPixels               = GL_PACK_SKIP_PIXELS,  ///< ES 3.0+
+        UnpackAlignment              = GL_UNPACK_ALIGNMENT,  ///< glPixelStorei state
+        UnpackRowLength              = GL_UNPACK_ROW_LENGTH,  ///< ES 3.0+
+        UnpackImageHeight            = GL_UNPACK_IMAGE_HEIGHT,  ///< ES 3.0+
+        UnpackSkipRows               = GL_UNPACK_SKIP_ROWS,  ///< ES 3.0+
+        UnpackSkipPixels             = GL_UNPACK_SKIP_PIXELS,  ///< ES 3.0+
+        UnpackSkipImages             = GL_UNPACK_SKIP_IMAGES,  ///< ES 3.0+
+        GenerateMipmapHint           = GL_GENERATE_MIPMAP_HINT,  ///< glHint state
+        FragmentShaderDerivativeHint = GL_FRAGMENT_SHADER_DERIVATIVE_HINT,  ///< glHint state. ES 3.0+
+        Blend                        = GL_BLEND,  ///< enable state, also queryable with glGet*
+        CullFace                     = GL_CULL_FACE,  ///< enable state
+        DepthTest                    = GL_DEPTH_TEST,  ///< enable state
+        Dither                       = GL_DITHER,  ///< enable state
+        PolygonOffsetFill            = GL_POLYGON_OFFSET_FILL,  ///< enable state
+        ScissorTest                  = GL_SCISSOR_TEST,  ///< enable state
+        StencilTest                  = GL_STENCIL_TEST,  ///< enable state
+        SampleAlphaToCoverage        = GL_SAMPLE_ALPHA_TO_COVERAGE,  ///< enable state
+        SampleCoverage               = GL_SAMPLE_COVERAGE,  ///< enable state
+        RasterizerDiscard            = GL_RASTERIZER_DISCARD,  ///< enable state. ES 3.0+
+        TextureBufferBinding         = GL_TEXTURE_BUFFER_BINDING,  ///< buffer bound to the TEXTURE_BUFFER target. ES 3.2+
+        TextureBufferOffsetAlignment = GL_TEXTURE_BUFFER_OFFSET_ALIGNMENT  ///< glTexBufferRange offset alignment. ES 3.2+
     };
 
     /**

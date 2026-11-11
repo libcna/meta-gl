@@ -238,6 +238,7 @@ int main()
     check("BlendFactor::Zero",                           to_string(BlendFactor::Zero));
     check("BlendEquation::FuncAdd",                      to_string(BlendEquation::FuncAdd));
     check("BufferTarget::Array",                         to_string(BufferTarget::Array));
+    check("BufferTarget::TextureBuffer",                 to_string(BufferTarget::TextureBuffer));
     check("BufferUsage::StaticDraw",                     to_string(BufferUsage::StaticDraw));
     check("BufferParameter::Size",                       to_string(BufferParameter::Size));
     check("BufferPointerParameter::MapPointer",          to_string(BufferPointerParameter::MapPointer));
@@ -334,6 +335,8 @@ int main()
     check("TessGenSpacing::Equal",                       to_string(TessGenSpacing::Equal));
     check("TessellationParameter::PatchVertices",        to_string(TessellationParameter::PatchVertices));
     check("GetParameter::Viewport",                      to_string(GetParameter::Viewport));
+    check("GetParameter::UnpackAlignment",               to_string(GetParameter::UnpackAlignment));
+    check("GetParameter::TextureBufferOffsetAlignment",  to_string(GetParameter::TextureBufferOffsetAlignment));
     check("FloatClearBuffer::Depth",                     to_string(FloatClearBuffer::Depth));
     check("SignedIntegerClearBuffer::Stencil",           to_string(SignedIntegerClearBuffer::Stencil));
     check("UnsignedIntegerClearBuffer::Color",           to_string(UnsignedIntegerClearBuffer::Color));
