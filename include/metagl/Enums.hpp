@@ -1132,7 +1132,9 @@ namespace metagl
         BlueType            = GL_TEXTURE_BLUE_TYPE,
         AlphaType           = GL_TEXTURE_ALPHA_TYPE,
         DepthType           = GL_TEXTURE_DEPTH_TYPE,
-        Compressed          = GL_TEXTURE_COMPRESSED
+        Compressed          = GL_TEXTURE_COMPRESSED,
+        Samples             = GL_TEXTURE_SAMPLES,                 ///< multisample textures (ES 3.2 §8.11.3). ES 3.1+
+        FixedSampleLocations = GL_TEXTURE_FIXED_SAMPLE_LOCATIONS  ///< multisample textures (ES 3.2 §8.11.3). ES 3.1+
     };
 
     /**
