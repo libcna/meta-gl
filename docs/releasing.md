@@ -1,6 +1,6 @@
 # Releasing meta-gl
 
-*Current as of 0.4.0 (2026-10-10).*
+*Current as of 0.4.2 (2026-11-14).*
 
 meta-gl follows [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html). A release is
 an annotated git tag plus a `CHANGELOG.md` entry — there is no separate release branch, and
@@ -69,6 +69,14 @@ file uses `SameMinorVersion` compatibility: `find_package(meta-gl 0.4)` accepts 
 nothing else. Pre-release identifiers are `alpha.N` → `beta.N` → `rc.N`, ordered as SemVer
 orders them. The release workflow is triggered only by final `vMAJOR.MINOR.PATCH` tags; a
 pre-release tag is a git tag only.
+
+A patch release never breaks the API, but it may add to it: 0.4.2 added enumerators and an
+overload. Consumers depend on the minor number. The package version file and CNA's
+`cna_require_sibling_version()` both accept any later patch of the minor they ask for, and both
+refuse a new minor. A minor bump is therefore reserved for changes that can break a consumer. A
+purely additive release would otherwise fail every downstream configure until each consumer
+raised its requirement. SemVer item 7 asks for a minor bump for new functionality, but item 4
+leaves a `0.y.z` version free to use the minor number this way.
 
 ## Downstream consumers
 
